@@ -12,7 +12,7 @@ const STATUS = {
 export default function Inquiries({ onChange }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({ status: 'all', kind: 'all', q: '' });
+  const [filter, setFilter] = useState({ status: 'all', q: '' });
   const [selectedId, setSelectedId] = useState(null);
   const [notes, setNotes] = useState('');
   const [toast, setToast] = useState('');
@@ -64,7 +64,7 @@ export default function Inquiries({ onChange }) {
 
   return (
     <>
-      <PageTitle title="Inquiries" subtitle="Messages and appointment requests sent from the website." />
+      <PageTitle title="Inquiries" subtitle="Messages sent from the website contact forms." />
 
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="flex flex-wrap gap-1 rounded-xl bg-white p-1 shadow-sm">
@@ -78,13 +78,6 @@ export default function Inquiries({ onChange }) {
               {filter.status === 'all' && k !== 'all' && counts[k] ? <span className="ml-1.5 text-xs opacity-60">{counts[k]}</span> : null}
             </button>
           ))}
-        </div>
-        <div className="w-full lg:w-56">
-          <Select
-            value={filter.kind}
-            onChange={(v) => setFilter({ ...filter, kind: v })}
-            options={[{ value: 'all', label: 'All types' }, { value: 'contact', label: 'Enquiries' }, { value: 'appointment', label: 'Appointments' }]}
-          />
         </div>
         <div className="relative flex-1">
           <Icon name="search" className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40" />
@@ -114,7 +107,6 @@ export default function Inquiries({ onChange }) {
                     <p className="mt-1.5 line-clamp-2 text-[13px] text-ink/60">{i.message}</p>
                     <div className="mt-2 flex gap-1.5">
                       <Pill tone={STATUS[i.status]?.tone}>{STATUS[i.status]?.label}</Pill>
-                      {i.kind === 'appointment' && <Pill tone="wine">Appointment</Pill>}
                     </div>
                   </button>
                 </li>
@@ -135,7 +127,6 @@ export default function Inquiries({ onChange }) {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-heading text-2xl">{selected.name}</h2>
-                    {selected.kind === 'appointment' && <Pill tone="wine">Appointment request</Pill>}
                   </div>
                   <p className="mt-1 text-sm text-ink/45">Received {formatDate(selected.created_at)}</p>
                 </div>
@@ -166,9 +157,7 @@ export default function Inquiries({ onChange }) {
               <dl className="mt-6 grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
                 {[
                   ['Subject', selected.subject],
-                  ['Area of law', selected.practice_area],
-                  ['Preferred date', selected.preferred_date && formatDate(selected.preferred_date, false)],
-                  ['Preferred time', selected.preferred_time]
+                  ['Area of law', selected.practice_area]
                 ]
                   .filter(([, v]) => v)
                   .map(([k, v]) => (

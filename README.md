@@ -25,7 +25,7 @@ Production build: `npm install && npm run build`, then `npm start` (serves the A
 
 * `/` Home (hero, firm, expertise, team, how we work, enquiry form)
 * `/lawyers` and `/lawyers/:slug` lawyer profiles
-* `/expertise`, `/about`, `/careers` (open positions and applications with CV upload), `/contact` (enquiry and appointment forms, map)
+* `/expertise`, `/about`, `/careers` (open positions and applications with CV upload), `/contact` (enquiry form and map)
 * `/terms`, `/cookies`, `/privacy`
 * `/link` link in bio page for social media profiles
 * Live chat button on every page
@@ -38,7 +38,7 @@ Office hours, chat greetings and the careers introduction are translated in admi
 
 ## Admin console (`/admin`)
 
-* **Inquiries**: contact and appointment requests, status (new, in progress, closed), internal notes, reply by email, delete
+* **Inquiries**: messages from the website contact forms, status (new, in progress, closed), internal notes, reply by email, delete
 * **Live Chat**: all conversations with unread counts and a sound alert, reply in real time, quick replies, close or delete. While an admin is signed in, visitors see "Our team is online".
 * **Lawyers**: add, edit, hide, reorder and delete lawyers, upload or remove photos, biography, education, admissions, languages, practice areas
 * **Expertise**: add, edit, reorder and delete areas of law

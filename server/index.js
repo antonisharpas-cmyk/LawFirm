@@ -132,14 +132,12 @@ app.post('/api/inquiries', rateLimit({ windowMs: 10 * 60 * 1000, max: 8 }), wrap
   const b = req.body || {};
   if (clean(b.website)) return res.json({ ok: true }); // honeypot
   const data = {
-    kind: b.kind === 'appointment' ? 'appointment' : 'contact',
+    kind: 'contact',
     name: clean(b.name, 200),
     email: clean(b.email, 200),
     phone: clean(b.phone, 60),
     subject: clean(b.subject, 300),
     practice_area: clean(b.practice_area, 200),
-    preferred_date: clean(b.preferred_date, 40),
-    preferred_time: clean(b.preferred_time, 40),
     message: clean(b.message, 8000)
   };
   if (!data.name || !isEmail(data.email) || !data.message) {
@@ -147,20 +145,18 @@ app.post('/api/inquiries', rateLimit({ windowMs: 10 * 60 * 1000, max: 8 }), wrap
   }
   if (!b.consent) return res.status(400).json({ error: 'Please accept the privacy notice to continue.' });
   const row = await one(
-    `INSERT INTO inquiries (kind, name, email, phone, subject, practice_area, preferred_date, preferred_time, message)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-    [data.kind, data.name, data.email, data.phone, data.subject, data.practice_area, data.preferred_date, data.preferred_time, data.message]
+    `INSERT INTO inquiries (kind, name, email, phone, subject, practice_area, message)
+     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+    [data.kind, data.name, data.email, data.phone, data.subject, data.practice_area, data.message]
   );
   notify(
-    data.kind === 'appointment' ? `New appointment request from ${data.name}` : `New website enquiry from ${data.name}`,
+    `New website enquiry from ${data.name}`,
     {
       Name: data.name,
       Email: data.email,
       Phone: data.phone,
       Subject: data.subject,
       'Area of law': data.practice_area,
-      'Preferred date': data.preferred_date,
-      'Preferred time': data.preferred_time,
       Message: data.message
     },
     data.email

@@ -4,7 +4,7 @@ import { Empty, Icon, PageTitle, Pill } from './common.jsx';
 
 const QUICK = [
   'Thank you for your message. Could you share a phone number so one of our lawyers can call you?',
-  'We would be happy to help. Would you like to book a consultation at our Larnaca office?',
+  'We would be happy to help. Would you like one of our lawyers to call you?',
   'Thank you, we have noted your details and will get back to you by email shortly.'
 ];
 

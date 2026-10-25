@@ -5,18 +5,15 @@ import { useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 import { Select } from './ui.jsx';
 
-const TIME_VALUES = ['Morning (9:00 to 12:00)', 'Midday (12:00 to 14:00)', 'Afternoon (14:00 to 17:00)'];
 
-export default function InquiryForm({ kind = 'contact', dark = false, compact = false }) {
+export default function InquiryForm({ dark = false, compact = false }) {
   const { areas } = useSite();
   const { t, tr, lang } = useI18n();
-  const empty = { name: '', email: '', phone: '', subject: '', practice_area: '', preferred_date: '', preferred_time: '', message: '', consent: false, website: '' };
+  const empty = { name: '', email: '', phone: '', subject: '', practice_area: '', message: '', consent: false, website: '' };
   const [f, setF] = useState(empty);
   const [state, setState] = useState({ sending: false, done: false, error: '' });
   const set = (k) => (e) => setF({ ...f, [k]: e?.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e });
   const field = dark ? 'field-dark' : 'field';
-  const today = new Date().toISOString().slice(0, 10);
-  const times = t('form.times');
 
   async function submit(e) {
     e.preventDefault();
@@ -27,7 +24,7 @@ export default function InquiryForm({ kind = 'contact', dark = false, compact = 
     setState({ sending: true, done: false, error: '' });
     try {
       // values are sent in English so the admin inbox is consistent; the language is noted in the message
-      const body = { ...f, kind, message: lang === 'en' ? f.message : `${f.message}\n\n[Website language: ${lang.toUpperCase()}]` };
+      const body = { ...f, message: lang === 'en' ? f.message : `${f.message}\n\n[Website language: ${lang.toUpperCase()}]` };
       await api('/api/inquiries', { method: 'POST', body });
       setState({ sending: false, done: true, error: '' });
       setF(empty);
@@ -43,7 +40,7 @@ export default function InquiryForm({ kind = 'contact', dark = false, compact = 
           <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </div>
         <h3 className="mt-5 font-heading text-2xl">{t('form.thanks')}</h3>
-        <p className={`mt-2 text-sm ${dark ? 'text-white/60' : 'text-ink/60'}`}>{kind === 'appointment' ? t('form.thanksAppointment') : t('form.thanksContact')}</p>
+        <p className={`mt-2 text-sm ${dark ? 'text-white/60' : 'text-ink/60'}`}>{t('form.thanksContact')}</p>
         <button onClick={() => setState({ sending: false, done: false, error: '' })} className="link-arrow mt-6">{t('form.another')}</button>
       </div>
     );
@@ -61,27 +58,11 @@ export default function InquiryForm({ kind = 'contact', dark = false, compact = 
         <Select dark={dark} value={f.practice_area} onChange={set('practice_area')} placeholder={t('form.area')} options={areaOptions} />
       </div>
 
-      {kind === 'appointment' ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <input
-            className={`${field} ${!f.preferred_date ? (dark ? 'text-white/35' : 'text-ink/40') : ''}`}
-            type="date"
-            min={today}
-            value={f.preferred_date}
-            onChange={set('preferred_date')}
-            aria-label={t('form.date')}
-            title={t('form.date')}
-            style={{ colorScheme: dark ? 'dark' : 'light' }}
-          />
-          <Select dark={dark} value={f.preferred_time} onChange={set('preferred_time')} placeholder={t('form.time')} options={TIME_VALUES.map((v, i) => ({ value: v, label: times[i] }))} />
-        </div>
-      ) : (
-        <input className={field} placeholder={t('form.subject')} value={f.subject} onChange={set('subject')} maxLength={300} />
-      )}
+      <input className={field} placeholder={t('form.subject')} value={f.subject} onChange={set('subject')} maxLength={300} />
 
       <textarea
         className={`${field} min-h-[140px] resize-y`}
-        placeholder={kind === 'appointment' ? t('form.matter') : t('form.message')}
+        placeholder={t('form.message')}
         value={f.message}
         onChange={set('message')}
         required
@@ -98,7 +79,7 @@ export default function InquiryForm({ kind = 'contact', dark = false, compact = 
       {state.error && <p className="text-sm text-red-500">{state.error}</p>}
 
       <button className="btn-gold" disabled={state.sending}>
-        {state.sending ? t('common.sending') : kind === 'appointment' ? t('form.requestAppointment') : t('form.sendEnquiry')}
+        {state.sending ? t('common.sending') : t('form.sendEnquiry')}
       </button>
     </form>
   );
