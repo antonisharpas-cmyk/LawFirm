@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: athanasiadou-law
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: athanasiadou-law-db
+          property: connectionString
+
+databases:
+  - name: athanasiadou-law-db
+    plan: basic-256mb
