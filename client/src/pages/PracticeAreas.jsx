@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { PageHero, Reveal, Arrow } from '../components/ui.jsx';
+import { PageHero, Reveal, Arrow, Avatar } from '../components/ui.jsx';
 import { useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
@@ -36,15 +36,26 @@ export default function PracticeAreas() {
                   <p className="mt-4 font-medium leading-relaxed text-ink/70">{tr(a, 'summary')}</p>
                   {tr(a, 'body') && <p className="mt-4 text-[15px] leading-relaxed text-ink/55">{tr(a, 'body')}</p>}
                   {team.length > 0 && (
-                    <p className="mt-6 text-sm text-ink/50">
-                      {t('expertise.contact')}:{' '}
-                      {team.map((l, j) => (
-                        <span key={l.id}>
-                          {j > 0 && ', '}
-                          <Link to={`/lawyers/${l.slug}`} className="text-gold-dark hover:underline">{l.name}</Link>
-                        </span>
-                      ))}
-                    </p>
+                    <div className="mt-8 border-t border-ink/10 pt-6">
+                      <p className="eyebrow !text-[10px] !text-gold-dark">{t('expertise.related')}</p>
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {team.map((l) => (
+                          <Link
+                            key={l.id}
+                            to={`/lawyers/${l.slug}`}
+                            className="group/lawyer flex items-center gap-3 rounded-full border border-ink/10 bg-white py-1.5 pe-5 ps-1.5 transition hover:border-gold"
+                          >
+                            <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full">
+                              <Avatar lawyer={l} textClass="text-sm" />
+                            </span>
+                            <span className="leading-tight">
+                              <span className="block text-sm font-medium text-ink transition group-hover/lawyer:text-gold-dark">{l.name}</span>
+                              <span className="block text-xs text-ink/45">{tr(l, 'title')}</span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </Reveal>
               );

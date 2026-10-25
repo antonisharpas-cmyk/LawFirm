@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSite, telHref } from '../lib/site.jsx';
-import { useI18n, LanguagePills } from '../i18n/index.jsx';
+import { useI18n, LanguageSwitcher } from '../i18n/index.jsx';
 import { StarMark } from '../components/ui.jsx';
 import { ErgonCredit } from '../components/Footer.jsx';
 
@@ -27,7 +27,7 @@ function Marquee({ words, reverse = false }) {
   const items = [...words, ...words, ...words, ...words];
   return (
     <div className="overflow-hidden border-y border-gold/20 bg-paper-dark py-4" aria-hidden="true" dir="ltr">
-      <div className={`flex w-max items-center ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'}`}>
+      <div className={`marquee-track ${reverse ? 'marquee-reverse' : ''}`}>
         {[0, 1].map((k) => (
           <div key={k} className="flex shrink-0 items-center">
             {items.map((w, i) => (
@@ -69,10 +69,12 @@ export default function LinkPage() {
       <main className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-14 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(191,165,117,0.16),transparent_60%)]" />
         <StarMark className="absolute -bottom-24 -end-24 h-[360px] w-[360px] opacity-[0.05]" />
+        <div className="absolute end-4 top-4 z-20 sm:end-6 sm:top-6">
+          <LanguageSwitcher />
+        </div>
         <div className="relative w-full max-w-xl text-center">
           <img src="/logo.png" alt="Athanasiadou Law Firm" className="mx-auto h-12 w-auto animate-fadeIn sm:h-14" />
           <h1 className="mt-6 animate-fadeUp font-heading text-2xl text-white/90 sm:text-3xl">{t('link.tagline')}</h1>
-          <LanguagePills className="mt-6 animate-fadeIn" />
           <nav className="mt-8 space-y-3">
             {links.map((l, i) => (
               <a

@@ -72,7 +72,7 @@ export default {
   },
   expertise: {
     intro: 'We advise individuals, families and businesses on a broad range of legal matters, with the care and attention each one deserves.',
-    contact: 'Contact',
+    related: 'Related Lawyers',
     ctaTitle: 'Not sure where your matter fits?',
     ctaText: 'Tell us about it and we will point you in the right direction.'
   },
