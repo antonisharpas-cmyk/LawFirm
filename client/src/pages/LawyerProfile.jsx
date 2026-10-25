@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { telHref, useSite } from '../lib/site.jsx';
+import { useI18n } from '../i18n/index.jsx';
 import { Avatar, Arrow, Reveal } from '../components/ui.jsx';
 import LawyerCard from '../components/LawyerCard.jsx';
 
@@ -10,7 +11,8 @@ const list = (s = '') => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 
 export default function LawyerProfile() {
   const { slug } = useParams();
-  const { lawyers } = useSite();
+  const { lawyers, areas } = useSite();
+  const { t, tr } = useI18n();
   const [lawyer, setLawyer] = useState(null);
   const [missing, setMissing] = useState(false);
 
@@ -28,19 +30,24 @@ export default function LawyerProfile() {
   if (missing) {
     return (
       <div className="bg-ink pb-32 pt-48 text-center text-white">
-        <h1 className="font-heading text-4xl">Profile not found</h1>
-        <Link to="/lawyers" className="link-arrow mt-6 !text-gold">Back to our lawyers <Arrow /></Link>
+        <h1 className="font-heading text-4xl">{t('profile.notFound')}</h1>
+        <Link to="/lawyers" className="link-arrow mt-6 !text-gold">{t('profile.back')} <Arrow /></Link>
       </div>
     );
   }
   if (!lawyer) return <div className="min-h-screen bg-ink" />;
 
+  // expertise names are stored in English; show them in the visitor's language
+  const areaName = (name) => {
+    const a = areas.find((x) => x.name.toLowerCase() === name.toLowerCase());
+    return a ? tr(a, 'name') : name;
+  };
   const others = lawyers.filter((l) => l.id !== lawyer.id).slice(0, 3);
   const details = [
-    ['Practice Areas', list(lawyer.practice_areas)],
-    ['Education', lines(lawyer.education)],
-    ['Admissions', lines(lawyer.admissions)],
-    ['Languages', list(lawyer.languages)]
+    [t('profile.expertise'), list(lawyer.practice_areas).map(areaName)],
+    [t('profile.education'), lines(tr(lawyer, 'education'))],
+    [t('profile.admissions'), lines(tr(lawyer, 'admissions'))],
+    [t('profile.languages'), list(tr(lawyer, 'languages'))]
   ].filter(([, v]) => v.length);
 
   return (
@@ -54,13 +61,13 @@ export default function LawyerProfile() {
             </div>
           </div>
           <div className="pb-4 lg:col-span-7">
-            <Link to="/lawyers" className="eyebrow eyebrow-line hover:text-gold-light">Our Lawyers</Link>
+            <Link to="/lawyers" className="eyebrow eyebrow-line hover:text-gold-light">{t('home.teamEyebrow')}</Link>
             <h1 className="h-display mt-6 animate-fadeUp text-5xl sm:text-6xl">{lawyer.name}</h1>
-            <p className="mt-4 font-accent text-2xl italic text-gold">{lawyer.title}</p>
-            {lawyer.summary && <p className="mt-6 max-w-xl leading-relaxed text-white/60">{lawyer.summary}</p>}
+            <p className="mt-4 font-accent text-2xl italic text-gold">{tr(lawyer, 'title')}</p>
+            {tr(lawyer, 'summary') && <p className="mt-6 max-w-xl leading-relaxed text-white/60">{tr(lawyer, 'summary')}</p>}
             <div className="mt-8 flex flex-wrap gap-3">
-              {lawyer.email && <a href={`mailto:${lawyer.email}`} className="btn-gold !py-3">Email</a>}
-              {lawyer.phone && <a href={telHref(lawyer.phone)} className="btn-outline !py-3">{lawyer.phone}</a>}
+              {lawyer.email && <a href={`mailto:${lawyer.email}`} className="btn-gold !py-3">{t('profile.email')}</a>}
+              {lawyer.phone && <a href={telHref(lawyer.phone)} className="btn-outline !py-3"><span dir="ltr">{lawyer.phone}</span></a>}
               {lawyer.linkedin && <a href={lawyer.linkedin} target="_blank" rel="noreferrer" className="btn-outline !py-3">LinkedIn</a>}
             </div>
           </div>
@@ -70,9 +77,9 @@ export default function LawyerProfile() {
       <section className="bg-white py-20 sm:py-28">
         <div className="container-x grid gap-16 lg:grid-cols-12">
           <Reveal className="lg:col-span-7">
-            <p className="eyebrow eyebrow-line">Biography</p>
+            <p className="eyebrow eyebrow-line">{t('profile.biography')}</p>
             <div className="prose-bio mt-8 text-[17px] leading-[1.85] text-ink/70">
-              {lines(lawyer.bio).map((p, i) => <p key={i}>{p}</p>)}
+              {lines(tr(lawyer, 'bio')).map((p, i) => <p key={i}>{p}</p>)}
             </div>
           </Reveal>
           <Reveal delay={120} className="lg:col-span-5">
@@ -87,7 +94,7 @@ export default function LawyerProfile() {
                   </ul>
                 </div>
               ))}
-              <Link to="/contact#book" className="btn-gold mt-10 w-full">Book a Consultation</Link>
+              <Link to="/contact" className="btn-gold mt-10 w-full">{t('common.contactUs')}</Link>
             </div>
           </Reveal>
         </div>
@@ -96,7 +103,7 @@ export default function LawyerProfile() {
       {others.length > 0 && (
         <section className="bg-paper py-20">
           <div className="container-x">
-            <h2 className="h-display text-3xl">Other members of our team</h2>
+            <h2 className="h-display text-3xl">{t('profile.others')}</h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((l) => <LawyerCard key={l.id} lawyer={l} />)}
             </div>

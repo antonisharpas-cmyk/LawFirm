@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const PATHS = {
   inbox: 'M3 13h5l2 3h4l2-3h5M5 5h14l2 8v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6l2-8z',
@@ -9,6 +9,9 @@ const PATHS = {
   external: 'M14 4h6v6M10 14L20 4M19 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1h6',
   logout: 'M15 16l4-4-4-4M19 12H9M12 20H5a1 1 0 01-1-1V5a1 1 0 011-1h7',
   menu: 'M4 6h16M4 12h16M4 18h16',
+  briefcase: 'M4 8h16v11H4zM9 8V5h6v3M4 13h16',
+  file: 'M7 3h7l5 5v13H7zM14 3v5h5',
+  download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
   trash: 'M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M9 7V4h6v3',
   mail: 'M4 6h16v12H4zM4 7l8 6 8-6',
   phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1z',
@@ -97,6 +100,54 @@ export function Empty({ title, text }) {
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
       <p className="font-heading text-xl text-ink/70">{title}</p>
       {text && <p className="mt-2 max-w-xs text-sm text-ink/45">{text}</p>}
+    </div>
+  );
+}
+
+// Translations editor used for lawyers, expertise areas and job positions.
+// English stays in the main form; Greek, Russian and Hebrew are optional and fall back to English on the website.
+const T_LANGS = [
+  ['el', 'Greek'],
+  ['ru', 'Russian'],
+  ['he', 'Hebrew']
+];
+
+export function TranslationFields({ value = {}, onChange, fields, source = {} }) {
+  const [lang, setLang] = useState('el');
+  const cur = value[lang] || {};
+  const set = (k, v) => onChange({ ...value, [lang]: { ...cur, [k]: v } });
+  const filled = (l) => Object.values(value[l] || {}).some(Boolean);
+  return (
+    <div className="rounded-xl border border-ink/10 bg-paper/60 p-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-medium">Translations</p>
+        <div className="inline-flex rounded-lg bg-white p-1 shadow-sm">
+          {T_LANGS.map(([code, label]) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => setLang(code)}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition ${lang === code ? 'bg-ink text-white' : 'text-ink/60 hover:bg-ink/5'}`}
+            >
+              {label}
+              <span className={`h-1.5 w-1.5 rounded-full ${filled(code) ? 'bg-emerald-500' : 'bg-ink/20'}`} />
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-3" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+        {fields.map(([key, label, long]) => (
+          <div key={key}>
+            <label className="a-label">{label}</label>
+            {long ? (
+              <textarea className="a-input min-h-[90px]" value={cur[key] || ''} placeholder={source[key] || ''} onChange={(e) => set(key, e.target.value)} />
+            ) : (
+              <input className="a-input" value={cur[key] || ''} placeholder={source[key] || ''} onChange={(e) => set(key, e.target.value)} />
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-ink/40">Empty fields show the English text on the website. The grey text is the English version.</p>
     </div>
   );
 }

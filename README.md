@@ -23,18 +23,27 @@ Production build: `npm install && npm run build`, then `npm start` (serves the A
 
 ## Pages
 
-* `/` Home (hero, firm, practice areas, team, how we work, enquiry form)
+* `/` Home (hero, firm, expertise, team, how we work, enquiry form)
 * `/lawyers` and `/lawyers/:slug` lawyer profiles
-* `/practice-areas`, `/about`, `/contact` (enquiry and appointment forms, map), `/privacy`
+* `/expertise`, `/about`, `/careers` (open positions and applications with CV upload), `/contact` (enquiry and appointment forms, map)
+* `/terms`, `/cookies`, `/privacy`
+* `/link` link in bio page for social media profiles
 * Live chat button on every page
+
+## Languages
+
+English, Greek, Russian and Hebrew (right to left). Website text lives in `client/src/i18n/*.js`.
+Lawyers, expertise areas and job positions have a Translations box in the admin editor; empty translations fall back to English.
+Office hours, chat greetings and the careers introduction are translated in admin Settings.
 
 ## Admin console (`/admin`)
 
 * **Inquiries**: contact and appointment requests, status (new, in progress, closed), internal notes, reply by email, delete
 * **Live Chat**: all conversations with unread counts and a sound alert, reply in real time, quick replies, close or delete. While an admin is signed in, visitors see "Our team is online".
 * **Lawyers**: add, edit, hide, reorder and delete lawyers, upload or remove photos, biography, education, admissions, languages, practice areas
-* **Practice Areas**: add, edit, reorder and delete services
-* **Settings**: firm contact details, office hours, chat greetings, social links
+* **Expertise**: add, edit, reorder and delete areas of law
+* **Careers**: job applications with CV download, status and notes, and the open positions shown on the website
+* **Settings**: firm contact details, office hours, chat greetings, translations, social links (Facebook, Instagram and LinkedIn show on the website and `/link` only when filled in)
 
 The three lawyers in the starter content are placeholders. Replace them from the admin console.
 

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
-import { initDb, query, one, getSettings, usingMemoryDb, DEFAULT_SETTINGS } from './db.js';
+import { initDb, query, one, getSettings, usingMemoryDb, DEFAULT_SETTINGS, LANGS } from './db.js';
 import { signToken, checkCredentials, requireAdmin, rateLimit } from './auth.js';
 import { notify } from './mail.js';
 
@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 4000;
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(compression());
-app.use(express.json({ limit: '8mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 // ---------- helpers ----------
 const clean = (v, max = 5000) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -37,9 +37,46 @@ const adminOnline = () => Date.now() - adminLastSeen < 2 * 60 * 1000;
 
 const LAWYER_FIELDS = ['name', 'title', 'email', 'phone', 'languages', 'education', 'admissions', 'practice_areas', 'summary', 'bio', 'linkedin'];
 
+// translations are stored as JSON text: { el: { field: value }, ru: {...}, he: {...} }
+function parseI18n(row) {
+  if (!row) return row;
+  let i18n = {};
+  try {
+    i18n = JSON.parse(row.i18n || '{}');
+  } catch {
+    i18n = {};
+  }
+  return { ...row, i18n };
+}
+function cleanI18n(input, fields) {
+  const out = {};
+  if (!input || typeof input !== 'object') return out;
+  for (const lang of LANGS.filter((l) => l !== 'en')) {
+    const src = input[lang];
+    if (!src || typeof src !== 'object') continue;
+    const o = {};
+    for (const f of fields) {
+      const v = clean(src[f], 20000);
+      if (v) o[f] = v;
+    }
+    if (Object.keys(o).length) out[lang] = o;
+  }
+  return JSON.stringify(out);
+}
+const I18N_FIELDS = {
+  lawyers: ['title', 'summary', 'bio', 'languages', 'education', 'admissions'],
+  practice_areas: ['name', 'summary', 'body'],
+  jobs: ['title', 'location', 'employment_type', 'summary', 'description', 'requirements']
+};
+
+async function saveI18n(table, row, body) {
+  if (!row || body?.i18n === undefined) return row;
+  return one(`UPDATE ${table} SET i18n = $1 WHERE id = $2 RETURNING *`, [cleanI18n(body.i18n, I18N_FIELDS[table]), row.id]);
+}
+
 function publicLawyer(l) {
   if (!l) return null;
-  const { photo, photo_type, ...rest } = l;
+  const { photo, photo_type, ...rest } = parseI18n(l);
   return {
     ...rest,
     photo_url: photo ? `/api/lawyers/${l.id}/photo?v=${l.photo_version}` : null
@@ -88,7 +125,7 @@ app.get('/api/lawyers/:id/photo', wrap(async (req, res) => {
 }));
 
 app.get('/api/practice-areas', wrap(async (req, res) => {
-  res.json(await query('SELECT * FROM practice_areas WHERE published = TRUE ORDER BY sort_order, id'));
+  res.json((await query('SELECT * FROM practice_areas WHERE published = TRUE ORDER BY sort_order, id')).map(parseI18n));
 }));
 
 app.post('/api/inquiries', rateLimit({ windowMs: 10 * 60 * 1000, max: 8 }), wrap(async (req, res) => {
@@ -121,13 +158,49 @@ app.post('/api/inquiries', rateLimit({ windowMs: 10 * 60 * 1000, max: 8 }), wrap
       Email: data.email,
       Phone: data.phone,
       Subject: data.subject,
-      'Practice area': data.practice_area,
+      'Area of law': data.practice_area,
       'Preferred date': data.preferred_date,
       'Preferred time': data.preferred_time,
       Message: data.message
     },
     data.email
   );
+  res.json({ ok: true, id: row.id });
+}));
+
+// ---------- careers ----------
+const CV_TYPES = {
+  'application/pdf': 'pdf',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx'
+};
+const JOB_FIELDS = ['title', 'location', 'employment_type', 'summary', 'description', 'requirements'];
+
+app.get('/api/jobs', wrap(async (req, res) => {
+  res.json((await query('SELECT * FROM jobs WHERE published = TRUE ORDER BY sort_order, id')).map(parseI18n));
+}));
+
+app.post('/api/applications', rateLimit({ windowMs: 30 * 60 * 1000, max: 6 }), wrap(async (req, res) => {
+  const b = req.body || {};
+  if (clean(b.website)) return res.json({ ok: true }); // honeypot
+  const name = clean(b.name, 200);
+  const email = clean(b.email, 200);
+  const phone = clean(b.phone, 60);
+  if (!name || !isEmail(email) || !phone) return res.status(400).json({ error: 'Please fill in your name, a valid email and your phone number.' });
+  if (!b.consent) return res.status(400).json({ error: 'Please accept the privacy notice to continue.' });
+  const m = /^data:([\w./+-]+);base64,([A-Za-z0-9+/=]+)$/.exec(b.cv?.dataUrl || '');
+  if (!m || !CV_TYPES[m[1]]) return res.status(400).json({ error: 'Please attach your CV as a PDF or Word document.' });
+  if (m[2].length > 7 * 1024 * 1024) return res.status(400).json({ error: 'Your CV must be smaller than 5 MB.' });
+  let job = null;
+  if (b.job_id) job = await one('SELECT id, title FROM jobs WHERE id = $1', [Number(b.job_id)]);
+  const jobTitle = job ? job.title : 'General application';
+  const cvName = clean(b.cv.name, 200).replace(/[^\w.\s()]/g, '_') || `cv.${CV_TYPES[m[1]]}`;
+  const row = await one(
+    `INSERT INTO applications (job_id, job_title, name, email, phone, linkedin, message, cv_name, cv_type, cv_data)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+    [job?.id || null, jobTitle, name, email, phone, clean(b.linkedin, 300), clean(b.message, 8000), cvName, m[1], m[2]]
+  );
+  notify(`New job application: ${jobTitle}`, { Position: jobTitle, Name: name, Email: email, Phone: phone, LinkedIn: clean(b.linkedin, 300), Message: clean(b.message, 8000), CV: cvName }, email);
   res.json({ ok: true, id: row.id });
 }));
 
@@ -155,7 +228,11 @@ app.post('/api/chat/start', rateLimit({ windowMs: 10 * 60 * 1000, max: 10 }), wr
   await query('INSERT INTO chat_messages (session_id, sender, body) VALUES ($1, $2, $3)', [
     session.id,
     'system',
-    adminOnline() ? settings.chat_welcome : settings.chat_offline
+    (() => {
+      const lang = LANGS.includes(b.lang) && b.lang !== 'en' ? `_${b.lang}` : '';
+      const key = adminOnline() ? 'chat_welcome' : 'chat_offline';
+      return settings[key + lang] || settings[key];
+    })()
   ]);
   if (first) await query('INSERT INTO chat_messages (session_id, sender, body) VALUES ($1, $2, $3)', [session.id, 'visitor', first]);
   notify(`New live chat from ${name}`, { Name: name, Email: email, Phone: phone, Message: first }, email || undefined);
@@ -210,7 +287,8 @@ admin.get('/stats', wrap(async (req, res) => {
   const [inq] = await query("SELECT COUNT(*)::int AS count FROM inquiries WHERE status = 'new'");
   const [chats] = await query('SELECT COUNT(*)::int AS count FROM chat_sessions WHERE unread_admin > 0');
   const [lawyers] = await query('SELECT COUNT(*)::int AS count FROM lawyers');
-  res.json({ newInquiries: Number(inq.count), unreadChats: Number(chats.count), lawyers: Number(lawyers.count) });
+  const [apps] = await query("SELECT COUNT(*)::int AS count FROM applications WHERE status = 'new'");
+  res.json({ newInquiries: Number(inq.count), unreadChats: Number(chats.count), lawyers: Number(lawyers.count), newApplications: Number(apps.count) });
 }));
 
 // inquiries
@@ -327,7 +405,7 @@ admin.post('/lawyers', wrap(async (req, res) => {
      VALUES ($1, ${LAWYER_FIELDS.map((_, i) => `$${i + 2}`).join(', ')}, $${LAWYER_FIELDS.length + 2}, $${LAWYER_FIELDS.length + 3}) RETURNING *`,
     [slug, ...values, b.published !== false, Number(max) + 1]
   );
-  res.json(publicLawyer(row));
+  res.json(publicLawyer(await saveI18n('lawyers', row, b)));
 }));
 
 admin.put('/lawyers/:id', wrap(async (req, res) => {
@@ -345,7 +423,7 @@ admin.put('/lawyers/:id', wrap(async (req, res) => {
      WHERE id = $${LAWYER_FIELDS.length + 3} RETURNING *`,
     [slug, ...values, published, id]
   );
-  res.json(publicLawyer(row));
+  res.json(publicLawyer(await saveI18n('lawyers', row, b)));
 }));
 
 admin.delete('/lawyers/:id', wrap(async (req, res) => {
@@ -382,7 +460,7 @@ admin.post('/lawyers/reorder', wrap(async (req, res) => {
 
 // practice areas
 admin.get('/practice-areas', wrap(async (req, res) => {
-  res.json(await query('SELECT * FROM practice_areas ORDER BY sort_order, id'));
+  res.json((await query('SELECT * FROM practice_areas ORDER BY sort_order, id')).map(parseI18n));
 }));
 
 admin.post('/practice-areas', wrap(async (req, res) => {
@@ -395,7 +473,7 @@ admin.post('/practice-areas', wrap(async (req, res) => {
     'INSERT INTO practice_areas (slug, name, summary, body, published, sort_order) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
     [slug, name, clean(b.summary, 1000), clean(b.body, 10000), b.published !== false, Number(max) + 1]
   );
-  res.json(row);
+  res.json(parseI18n(await saveI18n('practice_areas', row, b)));
 }));
 
 admin.put('/practice-areas/:id', wrap(async (req, res) => {
@@ -416,7 +494,7 @@ admin.put('/practice-areas/:id', wrap(async (req, res) => {
       id
     ]
   );
-  res.json(row);
+  res.json(parseI18n(await saveI18n('practice_areas', row, b)));
 }));
 
 admin.delete('/practice-areas/:id', wrap(async (req, res) => {
@@ -427,6 +505,95 @@ admin.delete('/practice-areas/:id', wrap(async (req, res) => {
 admin.post('/practice-areas/reorder', wrap(async (req, res) => {
   const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(Number) : [];
   for (const [i, id] of ids.entries()) await query('UPDATE practice_areas SET sort_order = $1 WHERE id = $2', [i, id]);
+  res.json({ ok: true });
+}));
+
+// jobs
+admin.get('/jobs', wrap(async (req, res) => {
+  res.json((await query('SELECT * FROM jobs ORDER BY sort_order, id')).map(parseI18n));
+}));
+
+admin.post('/jobs', wrap(async (req, res) => {
+  const b = req.body || {};
+  const title = clean(b.title, 200);
+  if (!title) return res.status(400).json({ error: 'Job title is required' });
+  const slug = await uniqueSlug('jobs', title);
+  const [{ max }] = await query('SELECT COALESCE(MAX(sort_order), 0) AS max FROM jobs');
+  const vals = JOB_FIELDS.map((f) => (f === 'title' ? title : clean(b[f], 10000)));
+  const row = await one(
+    `INSERT INTO jobs (slug, ${JOB_FIELDS.join(', ')}, published, sort_order)
+     VALUES ($1, ${JOB_FIELDS.map((_, i) => `$${i + 2}`).join(', ')}, $${JOB_FIELDS.length + 2}, $${JOB_FIELDS.length + 3}) RETURNING *`,
+    [slug, ...vals, b.published !== false, Number(max) + 1]
+  );
+  res.json(parseI18n(await saveI18n('jobs', row, b)));
+}));
+
+admin.put('/jobs/:id', wrap(async (req, res) => {
+  const id = Number(req.params.id);
+  const cur = await one('SELECT * FROM jobs WHERE id = $1', [id]);
+  if (!cur) return res.status(404).json({ error: 'Not found' });
+  const b = req.body || {};
+  const title = clean(b.title, 200) || cur.title;
+  const slug = title !== cur.title ? await uniqueSlug('jobs', title, id) : cur.slug;
+  const vals = JOB_FIELDS.map((f) => (f === 'title' ? title : b[f] !== undefined ? clean(b[f], 10000) : cur[f]));
+  const published = b.published !== undefined ? Boolean(b.published) : cur.published;
+  const row = await one(
+    `UPDATE jobs SET slug = $1, ${JOB_FIELDS.map((f, i) => `${f} = $${i + 2}`).join(', ')}, published = $${JOB_FIELDS.length + 2}
+     WHERE id = $${JOB_FIELDS.length + 3} RETURNING *`,
+    [slug, ...vals, published, id]
+  );
+  res.json(parseI18n(await saveI18n('jobs', row, b)));
+}));
+
+admin.delete('/jobs/:id', wrap(async (req, res) => {
+  await query('DELETE FROM jobs WHERE id = $1', [Number(req.params.id)]);
+  res.json({ ok: true });
+}));
+
+admin.post('/jobs/reorder', wrap(async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(Number) : [];
+  for (const [i, id] of ids.entries()) await query('UPDATE jobs SET sort_order = $1 WHERE id = $2', [i, id]);
+  res.json({ ok: true });
+}));
+
+// applications
+const APP_COLS = 'id, job_id, job_title, name, email, phone, linkedin, message, cv_name, cv_type, status, notes, created_at';
+
+admin.get('/applications', wrap(async (req, res) => {
+  const params = [];
+  const where = [];
+  if (req.query.status && req.query.status !== 'all') {
+    params.push(req.query.status);
+    where.push(`status = $${params.length}`);
+  }
+  if (req.query.q) {
+    params.push(`%${String(req.query.q).toLowerCase()}%`);
+    const p = `$${params.length}`;
+    where.push(`(LOWER(name) LIKE ${p} OR LOWER(email) LIKE ${p} OR LOWER(job_title) LIKE ${p})`);
+  }
+  res.json(await query(`SELECT ${APP_COLS} FROM applications ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY created_at DESC, id DESC LIMIT 500`, params));
+}));
+
+admin.patch('/applications/:id', wrap(async (req, res) => {
+  const id = Number(req.params.id);
+  const cur = await one(`SELECT ${APP_COLS} FROM applications WHERE id = $1`, [id]);
+  if (!cur) return res.status(404).json({ error: 'Not found' });
+  const statuses = ['new', 'reviewing', 'shortlisted', 'rejected', 'hired'];
+  const status = statuses.includes(req.body?.status) ? req.body.status : cur.status;
+  const notes = req.body?.notes !== undefined ? clean(req.body.notes, 8000) : cur.notes;
+  res.json(await one(`UPDATE applications SET status = $1, notes = $2 WHERE id = $3 RETURNING ${APP_COLS}`, [status, notes, id]));
+}));
+
+admin.get('/applications/:id/cv', wrap(async (req, res) => {
+  const row = await one('SELECT cv_name, cv_type, cv_data FROM applications WHERE id = $1', [Number(req.params.id)]);
+  if (!row || !row.cv_data) return res.status(404).json({ error: 'CV not found' });
+  res.set('Content-Type', row.cv_type);
+  res.set('Content-Disposition', `attachment; filename="${row.cv_name.replace(/"/g, '')}"`);
+  res.send(Buffer.from(row.cv_data, 'base64'));
+}));
+
+admin.delete('/applications/:id', wrap(async (req, res) => {
+  await query('DELETE FROM applications WHERE id = $1', [Number(req.params.id)]);
   res.json({ ok: true });
 }));
 

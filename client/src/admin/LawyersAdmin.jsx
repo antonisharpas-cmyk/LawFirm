@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, resizeImage } from '../lib/api.js';
 import { Avatar } from '../components/ui.jsx';
-import { Empty, Icon, Modal, PageTitle, Pill, Toast } from './common.jsx';
+import { Empty, Icon, Modal, PageTitle, Pill, Toast, TranslationFields } from './common.jsx';
 
-const EMPTY = { name: '', title: '', email: '', phone: '', languages: '', education: '', admissions: '', practice_areas: '', summary: '', bio: '', linkedin: '', published: true };
+const EMPTY = { name: '', title: '', email: '', phone: '', languages: '', education: '', admissions: '', practice_areas: '', summary: '', bio: '', linkedin: '', published: true, i18n: {} };
 
 function Field({ label, hint, children }) {
   return (
@@ -101,7 +101,7 @@ function Editor({ lawyer, areas, onSaved, onClose }) {
           <Field label="LinkedIn URL"><input className="a-input" value={f.linkedin} onChange={set('linkedin')} placeholder="https://" /></Field>
         </div>
 
-        <Field label="Practice areas" hint="Click to select, or type below separated with commas">
+        <Field label="Expertise" hint="Click to select, or type below separated with commas">
           <div className="mb-2 flex flex-wrap gap-1.5">
             {areas.map((a) => (
               <button
@@ -127,6 +127,20 @@ function Editor({ lawyer, areas, onSaved, onClose }) {
           <Field label="Education" hint="One per line"><textarea className="a-input min-h-[80px]" value={f.education} onChange={set('education')} /></Field>
           <Field label="Admissions" hint="One per line"><textarea className="a-input min-h-[80px]" value={f.admissions} onChange={set('admissions')} /></Field>
         </div>
+
+        <TranslationFields
+          value={f.i18n || {}}
+          onChange={(i18n) => setF({ ...f, i18n })}
+          source={f}
+          fields={[
+            ['title', 'Position'],
+            ['summary', 'Short summary', true],
+            ['bio', 'Biography', true],
+            ['languages', 'Languages'],
+            ['education', 'Education', true],
+            ['admissions', 'Admissions', true]
+          ]}
+        />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
         <div className="flex justify-end gap-2 border-t border-ink/10 pt-4">

@@ -28,7 +28,7 @@ export function Reveal({ as: Tag = 'div', delay = 0, className = '', children, .
 
 export function Arrow({ className = 'h-4 w-4' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <svg className={`${className} rtl:-scale-x-100`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
       <path d="M4 12h15M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -79,7 +79,7 @@ export function Select({ value, onChange, options, placeholder = 'Select', dark 
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
-        className={`${dark ? 'field-dark' : 'field'} flex items-center justify-between text-left`}
+        className={`${dark ? 'field-dark' : 'field'} flex items-center justify-between text-start`}
       >
         <span className={label ? '' : dark ? 'text-white/35' : 'text-ink/40'}>{label ? label.label ?? label : placeholder}</span>
         <svg className={`h-4 w-4 shrink-0 transition ${open ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -107,7 +107,7 @@ export function Select({ value, onChange, options, placeholder = 'Select', dark 
                     onChange(v);
                     setOpen(false);
                   }}
-                  className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                  className={`w-full rounded-lg px-3 py-2.5 text-start text-sm transition ${
                     active ? 'bg-gold/15 text-gold-dark' : dark ? 'hover:bg-white/5' : 'hover:bg-paper-dark'
                   } ${dark && active ? '!text-gold' : ''}`}
                 >
@@ -126,7 +126,7 @@ export function PageHero({ eyebrow, title, intro, children }) {
   return (
     <section className="relative overflow-hidden bg-ink pb-20 pt-40 text-white sm:pb-24 sm:pt-44">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(191,165,117,0.14),transparent_55%)]" />
-      <StarMark className="absolute -right-24 top-16 h-[420px] w-[420px] opacity-[0.05]" />
+      <StarMark className="absolute -end-24 top-16 h-[420px] w-[420px] opacity-[0.05]" />
       <div className="container-x relative">
         <p className="eyebrow eyebrow-line animate-fadeIn">{eyebrow}</p>
         <h1 className="h-display mt-6 max-w-3xl animate-fadeUp text-4xl sm:text-5xl lg:text-6xl">{title}</h1>

@@ -11,14 +11,42 @@ const GROUPS = [
       ['phone', 'Phone'],
       ['address_line1', 'Address line 1'],
       ['address_line2', 'Address line 2'],
-      ['hours', 'Office hours']
+      ['hours', 'Office hours (English)']
     ]
   ],
   [
     'Live chat',
     [
-      ['chat_welcome', 'Greeting when the team is online', true],
-      ['chat_offline', 'Greeting when the team is away', true]
+      ['chat_welcome', 'Greeting when the team is online (English)', true],
+      ['chat_offline', 'Greeting when the team is away (English)', true]
+    ]
+  ],
+  ['Careers page', [['careers_intro', 'Introduction (English)', true]]],
+  [
+    'Greek',
+    [
+      ['hours_el', 'Office hours'],
+      ['careers_intro_el', 'Careers introduction', true],
+      ['chat_welcome_el', 'Chat greeting, team online', true],
+      ['chat_offline_el', 'Chat greeting, team away', true]
+    ]
+  ],
+  [
+    'Russian',
+    [
+      ['hours_ru', 'Office hours'],
+      ['careers_intro_ru', 'Careers introduction', true],
+      ['chat_welcome_ru', 'Chat greeting, team online', true],
+      ['chat_offline_ru', 'Chat greeting, team away', true]
+    ]
+  ],
+  [
+    'Hebrew',
+    [
+      ['hours_he', 'Office hours'],
+      ['careers_intro_he', 'Careers introduction', true],
+      ['chat_welcome_he', 'Chat greeting, team online', true],
+      ['chat_offline_he', 'Chat greeting, team away', true]
     ]
   ],
   [
@@ -29,6 +57,7 @@ const GROUPS = [
       ['linkedin', 'LinkedIn URL']
     ]
   ]
+  // Facebook, Instagram and LinkedIn appear on the website and the /link page only when filled in
 ];
 
 export default function SettingsAdmin() {
@@ -67,9 +96,9 @@ export default function SettingsAdmin() {
                 <div key={key} className={long ? 'sm:col-span-2' : ''}>
                   <label className="a-label">{label}</label>
                   {long ? (
-                    <textarea className="a-input min-h-[80px]" value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
+                    <textarea className="a-input min-h-[80px]" dir={key.endsWith('_he') ? 'rtl' : 'ltr'} value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
                   ) : (
-                    <input className="a-input" value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
+                    <input className="a-input" dir={key.endsWith('_he') ? 'rtl' : 'ltr'} value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
                   )}
                 </div>
               ))}

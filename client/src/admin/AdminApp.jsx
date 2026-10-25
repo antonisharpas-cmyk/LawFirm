@@ -6,6 +6,7 @@ import Chats from './Chats.jsx';
 import LawyersAdmin from './LawyersAdmin.jsx';
 import PracticeAreasAdmin from './PracticeAreasAdmin.jsx';
 import SettingsAdmin from './SettingsAdmin.jsx';
+import CareersAdmin from './CareersAdmin.jsx';
 import { Icon } from './common.jsx';
 
 function Login({ onLogin }) {
@@ -46,7 +47,8 @@ const NAV = [
   { to: 'inquiries', label: 'Inquiries', icon: 'inbox', badge: 'newInquiries' },
   { to: 'chat', label: 'Live Chat', icon: 'chat', badge: 'unreadChats' },
   { to: 'lawyers', label: 'Lawyers', icon: 'users' },
-  { to: 'practice-areas', label: 'Practice Areas', icon: 'scale' },
+  { to: 'expertise', label: 'Expertise', icon: 'scale' },
+  { to: 'careers', label: 'Careers', icon: 'briefcase', badge: 'newApplications' },
   { to: 'settings', label: 'Settings', icon: 'cog' }
 ];
 
@@ -74,6 +76,8 @@ export default function AdminApp() {
 
   useEffect(() => {
     document.title = 'Admin | Athanasiadou Law Firm';
+    document.documentElement.dir = 'ltr';
+    document.documentElement.lang = 'en';
     if (!authed) return;
     api('/api/admin/me', { admin: true }).then(setMe).catch((e) => e.status === 401 && logout());
     refreshStats();
@@ -82,7 +86,7 @@ export default function AdminApp() {
   }, [authed, refreshStats, logout]);
 
   useEffect(() => {
-    const n = stats.newInquiries + stats.unreadChats;
+    const n = stats.newInquiries + stats.unreadChats + (stats.newApplications || 0);
     document.title = `${n ? `(${n}) ` : ''}Admin | Athanasiadou Law Firm`;
   }, [stats]);
 
@@ -155,7 +159,8 @@ export default function AdminApp() {
             <Route path="inquiries" element={<Inquiries onChange={refreshStats} />} />
             <Route path="chat" element={<Chats onChange={refreshStats} />} />
             <Route path="lawyers" element={<LawyersAdmin />} />
-            <Route path="practice-areas" element={<PracticeAreasAdmin />} />
+            <Route path="expertise" element={<PracticeAreasAdmin />} />
+            <Route path="careers" element={<CareersAdmin onChange={refreshStats} />} />
             <Route path="settings" element={<SettingsAdmin />} />
             <Route path="*" element={<Navigate to="inquiries" replace />} />
           </Routes>

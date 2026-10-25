@@ -1,8 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useSite, telHref } from '../lib/site.jsx';
+import { useI18n } from '../i18n/index.jsx';
+
+export function ErgonCredit({ className = '' }) {
+  const { t } = useI18n();
+  return (
+    <a
+      href="https://www.ergonsite.com"
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Developed & Designed by ErgonSite"
+      className={`group flex items-center justify-center gap-2.5 opacity-70 transition duration-500 hover:opacity-100 ${className}`}
+    >
+      <span className="whitespace-nowrap text-[11px] text-white/45 transition group-hover:text-white/70">{t('footer.credit')}</span>
+      <img src="/ergonsite.png" alt="ErgonSite" width="480" height="104" className="h-auto w-[84px]" loading="lazy" dir="ltr" />
+    </a>
+  );
+}
 
 export default function Footer() {
   const { settings, areas } = useSite();
+  const { t, tr, ts } = useI18n();
   const year = new Date().getFullYear();
   const socials = [
     ['Facebook', settings.facebook],
@@ -15,9 +33,7 @@ export default function Footer() {
       <div className="container-x grid gap-12 py-20 md:grid-cols-2 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <img src="/logo.png" alt="Athanasiadou Law Firm" className="h-10 w-auto" />
-          <p className="mt-6 max-w-sm text-sm leading-relaxed">
-            A Larnaca law firm providing clear, dependable legal advice to individuals and businesses across Cyprus.
-          </p>
+          <p className="mt-6 max-w-sm text-sm leading-relaxed">{t('footer.tagline')}</p>
           {socials.length > 0 && (
             <div className="mt-6 flex gap-4">
               {socials.map(([label, url]) => (
@@ -30,14 +46,14 @@ export default function Footer() {
         </div>
 
         <div className="lg:col-span-2">
-          <h4 className="eyebrow mb-5">Explore</h4>
+          <h4 className="eyebrow mb-5">{t('footer.explore')}</h4>
           <ul className="space-y-3 text-sm">
             {[
-              ['/lawyers', 'Our Lawyers'],
-              ['/practice-areas', 'Practice Areas'],
-              ['/about', 'About the Firm'],
-              ['/contact', 'Contact'],
-              ['/contact#book', 'Book a Consultation']
+              ['/lawyers', t('footer.ourLawyers')],
+              ['/expertise', t('nav.expertise')],
+              ['/about', t('footer.aboutFirm')],
+              ['/careers', t('nav.careers')],
+              ['/contact', t('nav.contact')]
             ].map(([to, l]) => (
               <li key={to}>
                 <Link to={to} className="transition hover:text-gold">{l}</Link>
@@ -47,18 +63,18 @@ export default function Footer() {
         </div>
 
         <div className="lg:col-span-3">
-          <h4 className="eyebrow mb-5">Practice Areas</h4>
+          <h4 className="eyebrow mb-5">{t('nav.expertise')}</h4>
           <ul className="space-y-3 text-sm">
             {areas.slice(0, 6).map((a) => (
               <li key={a.id}>
-                <Link to={`/practice-areas#${a.slug}`} className="transition hover:text-gold">{a.name}</Link>
+                <Link to={`/expertise#${a.slug}`} className="transition hover:text-gold">{tr(a, 'name')}</Link>
               </li>
             ))}
           </ul>
         </div>
 
         <div className="lg:col-span-3">
-          <h4 className="eyebrow mb-5">Office</h4>
+          <h4 className="eyebrow mb-5">{t('footer.office')}</h4>
           <address className="space-y-3 text-sm not-italic leading-relaxed">
             <p>
               {settings.address_line1}
@@ -66,21 +82,23 @@ export default function Footer() {
               {settings.address_line2}
             </p>
             <p>
-              <a href={telHref(settings.phone)} className="hover:text-gold">{settings.phone}</a>
+              <a href={telHref(settings.phone)} className="hover:text-gold"><span dir="ltr">{settings.phone}</span></a>
               <br />
               <a href={`mailto:${settings.email}`} className="hover:text-gold">{settings.email}</a>
             </p>
-            {settings.hours && <p>{settings.hours}</p>}
+            {ts(settings, 'hours') && <p>{ts(settings, 'hours')}</p>}
           </address>
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="container-x flex flex-col gap-3 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} {settings.firm_name}. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link to="/privacy" className="hover:text-gold">Privacy Notice</Link>
-            <a href="https://www.ergonsite.com" target="_blank" rel="noreferrer" className="hover:text-gold">Website by ErgonSite</a>
-          </div>
+        <div className="container-x grid items-center gap-5 pb-24 pt-7 text-center text-xs lg:grid-cols-3 lg:pb-7 lg:text-start xl:pe-24">
+          <p className="order-3 lg:order-1">© {year} {settings.firm_name}. {t('footer.rights')}</p>
+          <ErgonCredit className="order-2" />
+          <nav className="order-1 flex flex-wrap justify-center gap-x-6 gap-y-2 lg:order-3 lg:justify-end" aria-label="Legal">
+            <Link to="/terms" className="hover:text-gold">{t('footer.terms')}</Link>
+            <Link to="/cookies" className="hover:text-gold">{t('footer.cookies')}</Link>
+            <Link to="/privacy" className="hover:text-gold">{t('footer.privacy')}</Link>
+          </nav>
         </div>
       </div>
     </footer>
