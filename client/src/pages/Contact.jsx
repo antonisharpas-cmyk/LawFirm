@@ -14,7 +14,14 @@ export default function Contact() {
 
       <section className="bg-paper py-20 sm:py-28">
         <div className="container-x grid gap-14 lg:grid-cols-12">
-          <Reveal className="space-y-5 lg:col-span-4">
+          <Reveal className="lg:col-span-8">
+            <div className="card p-6 sm:p-10">
+              <h2 className="font-heading text-3xl">{t('contact.enquiryTitle')}</h2>
+              <p className="mb-8 mt-2 text-sm text-ink/55">{t('contact.enquiryText')}</p>
+              <InquiryForm />
+            </div>
+          </Reveal>
+          <Reveal delay={120} className="space-y-5 lg:col-span-4">
             {[
               [t('contact.emailLabel'), settings.email, `mailto:${settings.email}`, false],
               [t('contact.phoneLabel'), <span dir="ltr">{settings.phone}</span>, telHref(settings.phone), false],
@@ -33,13 +40,6 @@ export default function Contact() {
               })}
           </Reveal>
 
-          <Reveal delay={120} className="lg:col-span-8">
-            <div className="card p-6 sm:p-10">
-              <h2 className="font-heading text-3xl">{t('contact.enquiryTitle')}</h2>
-              <p className="mb-8 mt-2 text-sm text-ink/55">{t('contact.enquiryText')}</p>
-              <InquiryForm />
-            </div>
-          </Reveal>
         </div>
       </section>
 
@@ -47,7 +47,7 @@ export default function Contact() {
         <iframe
           title={t('contact.mapTitle')}
           src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&hl=${lang}&output=embed`}
-          className="h-full w-full grayscale"
+          className="h-full w-full"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         />

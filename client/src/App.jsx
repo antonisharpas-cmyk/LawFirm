@@ -30,11 +30,12 @@ const TITLES = {
 };
 
 function ScrollManager() {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, key } = useLocation();
+  // runs on every navigation, including clicking a link to the page you are already on
   useEffect(() => {
-    if (!hash) window.scrollTo(0, 0);
+    if (!hash) window.scrollTo({ top: 0, behavior: 'instant' });
     if (TITLES[pathname]) document.title = TITLES[pathname];
-  }, [pathname, hash]);
+  }, [pathname, hash, key]);
   return null;
 }
 
@@ -50,12 +51,14 @@ function NotFound() {
 }
 
 function PublicSite() {
+  // the key makes the page start fresh when its own menu link is clicked again
+  const location = useLocation();
   return (
     <>
       <ScrollManager />
       <Header />
       <main>
-        <Routes>
+        <Routes key={location.key}>
           <Route path="/" element={<Home />} />
           <Route path="/lawyers" element={<Lawyers />} />
           <Route path="/lawyers/:slug" element={<LawyerProfile />} />
