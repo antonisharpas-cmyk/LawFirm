@@ -34,18 +34,30 @@ export function Arrow({ className = 'h-4 w-4' }) {
   );
 }
 
-export function StarMark({ className = 'h-6 w-6', stroke = '#BFA575' }) {
-  // Four point star from the Athanasiadou logo
+// Decorative ampersand taken from the "H. A. Andreou & Co" name
+export function StarMark({ className = 'h-6 w-6', stroke = '#B08B4F' }) {
   return (
     <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <path
-        d="M50 6 C54 30 62 40 92 50 C62 60 54 70 50 94 C46 70 38 60 8 50 C38 40 46 30 50 6 Z"
+      <text
+        x="50"
+        y="80"
+        textAnchor="middle"
+        fontFamily="'Cormorant Garamond', Georgia, serif"
+        fontSize="104"
+        fontStyle="italic"
+        fill="none"
         stroke={stroke}
-        strokeWidth="7"
-        strokeLinejoin="round"
-      />
+        strokeWidth="1.6"
+      >
+        &amp;
+      </text>
     </svg>
   );
+}
+
+// Thin gold rule used as a separator
+export function GoldRule({ className = '' }) {
+  return <span className={`inline-block h-px w-8 bg-gold/70 ${className}`} aria-hidden="true" />;
 }
 
 export function Avatar({ lawyer, className = '', textClass = 'text-5xl' }) {
@@ -122,11 +134,22 @@ export function Select({ value, onChange, options, placeholder = 'Select', dark 
   );
 }
 
-export function PageHero({ eyebrow, title, intro, children }) {
+export function PageHero({ eyebrow, title, intro, image, children }) {
   return (
     <section className="relative overflow-hidden bg-ink pb-20 pt-40 text-white sm:pb-24 sm:pt-44">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(191,165,117,0.14),transparent_55%)]" />
-      <StarMark className="absolute -end-24 top-16 h-[420px] w-[420px] opacity-[0.05]" />
+      {image ? (
+        <>
+          <img src={image} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full animate-fadeIn object-cover grayscale" />
+          <div className="absolute inset-0 bg-ink/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/20 rtl:bg-gradient-to-l" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(176,139,79,0.18),transparent_55%)]" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(176,139,79,0.16),transparent_55%)]" />
+          <StarMark className="absolute -end-24 top-16 h-[420px] w-[420px] opacity-[0.05]" />
+        </>
+      )}
       <div className="container-x relative">
         <p className="eyebrow eyebrow-line animate-fadeIn">{eyebrow}</p>
         <h1 className="h-display mt-6 max-w-3xl animate-fadeUp text-4xl sm:text-5xl lg:text-6xl">{title}</h1>
@@ -134,5 +157,68 @@ export function PageHero({ eyebrow, title, intro, children }) {
         {children}
       </div>
     </section>
+  );
+}
+
+const SOCIAL_PATHS = {
+  facebook: 'M14 8h3V4h-3a4 4 0 00-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z',
+  instagram: 'M7 3h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7a4 4 0 014-4zM12 16a4 4 0 100-8 4 4 0 000 8zM17.5 6.5h.01',
+  linkedin: 'M4 9h4v11H4zM6 4a2 2 0 110 4 2 2 0 010-4zM10 9h4v1.6c.6-1 1.8-1.8 3.5-1.8 3 0 3.5 2 3.5 4.6V20h-4v-5.6c0-1.3 0-3-1.8-3s-2.2 1.4-2.2 2.9V20h-4z'
+};
+
+export function SocialLinks({ settings, className = '' }) {
+  const items = [
+    ['facebook', 'Facebook', settings.facebook],
+    ['instagram', 'Instagram', settings.instagram],
+    ['linkedin', 'LinkedIn', settings.linkedin]
+  ].filter(([, , url]) => url);
+  if (!items.length) return null;
+  return (
+    <div className={`flex gap-3 ${className}`}>
+      {items.map(([key, label, url]) => (
+        <a
+          key={key}
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={label}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-gold hover:text-gold"
+        >
+          <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d={SOCIAL_PATHS[key]} />
+          </svg>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// Plain text with paragraphs; lines starting with "• " become a list
+export function RichText({ text = '', className = '' }) {
+  const blocks = [];
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith('•')) {
+      const item = line.replace(/^•\s*/, '');
+      const last = blocks[blocks.length - 1];
+      if (last && last.type === 'list') last.items.push(item);
+      else blocks.push({ type: 'list', items: [item] });
+    } else blocks.push({ type: 'p', text: line });
+  }
+  return (
+    <div className={`space-y-3 ${className}`}>
+      {blocks.map((b, i) =>
+        b.type === 'p' ? (
+          <p key={i}>{b.text}</p>
+        ) : (
+          <ul key={i} className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+            {b.items.map((x) => (
+              <li key={x} className="flex gap-3"><span className="mt-[11px] h-px w-3 shrink-0 bg-gold" />{x}</li>
+            ))}
+          </ul>
+        )
+      )}
+    </div>
   );
 }

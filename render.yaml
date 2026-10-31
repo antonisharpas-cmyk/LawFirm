@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: athanasiadou-law
+    name: ha-andreou-law
     runtime: node
     plan: starter
     buildCommand: npm install && npm run build
@@ -17,9 +17,9 @@ services:
         generateValue: true
       - key: DATABASE_URL
         fromDatabase:
-          name: athanasiadou-law-db
+          name: ha-andreou-law-db
           property: connectionString
 
 databases:
-  - name: athanasiadou-law-db
+  - name: ha-andreou-law-db
     plan: basic-256mb

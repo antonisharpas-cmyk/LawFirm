@@ -1,5 +1,5 @@
 import InquiryForm from '../components/InquiryForm.jsx';
-import { PageHero, Reveal } from '../components/ui.jsx';
+import { PageHero, Reveal, SocialLinks } from '../components/ui.jsx';
 import { telHref, useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
@@ -7,6 +7,7 @@ export default function Contact() {
   const { settings } = useSite();
   const { t, ts, lang } = useI18n();
   const address = `${settings.address_line1}, ${settings.address_line2}`;
+  const pin = settings.map_location || address;
 
   return (
     <>
@@ -25,7 +26,8 @@ export default function Contact() {
             {[
               [t('contact.emailLabel'), settings.email, `mailto:${settings.email}`, false],
               [t('contact.phoneLabel'), <span dir="ltr">{settings.phone}</span>, telHref(settings.phone), false],
-              [t('contact.officeLabel'), address, `https://maps.google.com/?q=${encodeURIComponent(address)}`, true],
+              [t('contact.faxLabel'), settings.fax && <span dir="ltr">{settings.fax}</span>, null, false],
+              [t('contact.officeLabel'), address, `https://maps.google.com/?q=${encodeURIComponent(pin)}`, true],
               [t('contact.hoursLabel'), ts(settings, 'hours'), null, false]
             ]
               .filter(([, v]) => v)
@@ -38,6 +40,7 @@ export default function Contact() {
                   </Tag>
                 );
               })}
+            <SocialLinks settings={settings} className="pt-2 [&_a]:border-ink/15 [&_a]:text-ink/60" />
           </Reveal>
 
         </div>
@@ -46,7 +49,7 @@ export default function Contact() {
       <section className="h-[420px] w-full bg-ink-700">
         <iframe
           title={t('contact.mapTitle')}
-          src={`https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=16&hl=${lang}&output=embed`}
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(pin)}&z=17&hl=${lang}&output=embed`}
           className="h-full w-full"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"

@@ -86,7 +86,7 @@ function Editor({ lawyer, areas, onSaved, onClose }) {
         )}
         <p className="mt-2 text-xs text-ink/40">Portrait photos work best (4:5). Images are resized automatically.</p>
         <label className="mt-6 flex cursor-pointer items-center gap-2 text-sm">
-          <input type="checkbox" checked={f.published} onChange={set('published')} className="h-4 w-4 accent-[#BFA575]" />
+          <input type="checkbox" checked={f.published} onChange={set('published')} className="h-4 w-4 accent-[#B08B4F]" />
           Show on website
         </label>
       </div>
@@ -124,8 +124,8 @@ function Editor({ lawyer, areas, onSaved, onClose }) {
           <textarea className="a-input min-h-[200px]" value={f.bio} onChange={set('bio')} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Education" hint="One per line"><textarea className="a-input min-h-[80px]" value={f.education} onChange={set('education')} /></Field>
-          <Field label="Admissions" hint="One per line"><textarea className="a-input min-h-[80px]" value={f.admissions} onChange={set('admissions')} /></Field>
+          <Field label="Academic qualifications" hint="One per line"><textarea className="a-input min-h-[80px]" value={f.education} onChange={set('education')} /></Field>
+          <Field label="Professional qualifications" hint="One per line"><textarea className="a-input min-h-[80px]" value={f.admissions} onChange={set('admissions')} /></Field>
         </div>
 
         <TranslationFields
@@ -137,8 +137,8 @@ function Editor({ lawyer, areas, onSaved, onClose }) {
             ['summary', 'Short summary', true],
             ['bio', 'Biography', true],
             ['languages', 'Languages'],
-            ['education', 'Education', true],
-            ['admissions', 'Admissions', true]
+            ['education', 'Academic qualifications', true],
+            ['admissions', 'Professional qualifications', true]
           ]}
         />
 

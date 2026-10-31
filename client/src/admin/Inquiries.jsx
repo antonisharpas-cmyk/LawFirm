@@ -140,7 +140,7 @@ export default function Inquiries({ onChange }) {
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <a href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject || 'Your enquiry to Athanasiadou Law Firm'}`)}`} className="flex items-center gap-3 rounded-xl border border-ink/10 p-4 transition hover:border-gold">
+                <a href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject || 'Your enquiry to H.A. Andreou & Co'}`)}`} className="flex items-center gap-3 rounded-xl border border-ink/10 p-4 transition hover:border-gold">
                   <Icon name="mail" className="h-5 w-5 text-gold-dark" />
                   <span className="min-w-0"><span className="block text-xs text-ink/45">Email</span><span className="block truncate text-sm">{selected.email}</span></span>
                 </a>
@@ -177,7 +177,7 @@ export default function Inquiries({ onChange }) {
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <button className="a-btn-primary" onClick={() => update(selected.id, { notes }, 'Notes saved')}>Save notes</button>
-                <a className="a-btn-gold" href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject || 'Your enquiry to Athanasiadou Law Firm'}`)}`}>
+                <a className="a-btn-gold" href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject || 'Your enquiry to H.A. Andreou & Co'}`)}`}>
                   <Icon name="mail" /> Reply by email
                 </a>
                 {selected.status !== 'closed' && (

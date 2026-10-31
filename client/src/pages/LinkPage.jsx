@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSite, telHref } from '../lib/site.jsx';
 import { useI18n, LanguageSwitcher } from '../i18n/index.jsx';
-import { StarMark } from '../components/ui.jsx';
+import { GoldRule } from '../components/ui.jsx';
 import { ErgonCredit } from '../components/Footer.jsx';
 
 const ICONS = {
@@ -26,14 +26,14 @@ function Icon({ name }) {
 function Marquee({ words, reverse = false }) {
   const items = [...words, ...words, ...words, ...words];
   return (
-    <div className="overflow-hidden border-y border-gold/20 bg-paper-dark py-4" aria-hidden="true" dir="ltr">
-      <div className={`marquee-track ${reverse ? 'marquee-reverse' : ''}`}>
+    <div className="overflow-hidden border-y border-gold/20 bg-paper-dark py-4 lg:py-3" aria-hidden="true" dir="ltr">
+      <div className={`marquee-track ${reverse ? 'marquee-reverse' : ''}`} style={{ animationDuration: '90s' }}>
         {[0, 1].map((k) => (
           <div key={k} className="flex shrink-0 items-center">
             {items.map((w, i) => (
               <span key={`${k}-${i}`} className="flex items-center">
                 <span className="whitespace-nowrap px-8 text-[13px] uppercase tracking-[0.4em] text-ink/45">{w}</span>
-                <StarMark className="h-3.5 w-3.5 opacity-60" />
+                <GoldRule className="!w-6" />
               </span>
             ))}
           </div>
@@ -49,7 +49,7 @@ export default function LinkPage() {
   const address = `${settings.address_line1}, ${settings.address_line2}`;
 
   useEffect(() => {
-    document.title = 'Athanasiadou Law Firm';
+    document.title = 'H.A. Andreou & Co';
   }, []);
 
   const links = [
@@ -60,22 +60,21 @@ export default function LinkPage() {
     settings.facebook && { icon: 'facebook', label: 'Facebook', href: settings.facebook, ext: true },
     settings.instagram && { icon: 'instagram', label: 'Instagram', href: settings.instagram, ext: true },
     settings.linkedin && { icon: 'linkedin', label: 'LinkedIn', href: settings.linkedin, ext: true },
-    { icon: 'pin', label: t('link.directions'), href: `https://maps.google.com/?q=${encodeURIComponent(address)}`, ext: true }
+    { icon: 'pin', label: t('link.directions'), href: `https://maps.google.com/?q=${encodeURIComponent(settings.map_location || address)}`, ext: true }
   ].filter(Boolean);
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-ink">
       <Marquee words={t('link.marqueeTop')} />
-      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-14 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(191,165,117,0.16),transparent_60%)]" />
-        <StarMark className="absolute -bottom-24 -end-24 h-[360px] w-[360px] opacity-[0.05]" />
+      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-14 text-white lg:py-8">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(176,139,79,0.16),transparent_60%)]" />
         <div className="absolute end-4 top-4 z-20 sm:end-6 sm:top-6">
           <LanguageSwitcher />
         </div>
         <div className="relative w-full max-w-xl text-center">
-          <img src="/logo.png" alt="Athanasiadou Law Firm" className="mx-auto h-12 w-auto animate-fadeIn sm:h-14" />
-          <h1 className="mt-6 animate-fadeUp font-heading text-2xl text-white/90 sm:text-3xl">{t('link.tagline')}</h1>
-          <nav className="mt-8 space-y-3">
+          <img src="/logo-full.png" alt="H.A. Andreou & Co, Advocates, Legal Consultants" className="mx-auto w-72 animate-fadeIn sm:w-80 lg:w-72" />
+          <h1 className="mt-6 animate-fadeUp lg:mt-4 font-heading text-2xl text-white/90 sm:text-3xl">{t('link.tagline')}</h1>
+          <nav className="mt-8 space-y-3 lg:mt-6 lg:space-y-2.5">
             {links.map((l, i) => (
               <a
                 key={l.label}
@@ -83,7 +82,7 @@ export default function LinkPage() {
                 target={l.ext ? '_blank' : undefined}
                 rel={l.ext ? 'noreferrer' : undefined}
                 style={{ animationDelay: `${150 + i * 70}ms` }}
-                className={`flex animate-fadeUp items-center justify-center gap-3 rounded-full border px-6 py-4 text-[13px] uppercase tracking-[0.28em] transition duration-300 ${
+                className={`flex animate-fadeUp items-center justify-center gap-3 rounded-full border px-6 py-4 text-[13px] lg:py-3 uppercase tracking-[0.28em] transition duration-300 ${
                   l.primary ? 'border-gold bg-gold text-ink hover:bg-gold-light' : 'border-white/20 text-white/90 hover:border-gold hover:text-gold'
                 }`}
               >
@@ -92,11 +91,10 @@ export default function LinkPage() {
               </a>
             ))}
           </nav>
-          <p className="mt-10 text-[12px] uppercase tracking-[0.3em] text-white/40">{settings.address_line1.split(',')[0]}, {settings.address_line2}</p>
-          <ErgonCredit className="mt-6" />
+          <p className="mt-10 text-[12px] uppercase lg:mt-6 tracking-[0.3em] text-white/40">{settings.address_line1.split(',')[0]}, {settings.address_line2}</p>
+          <ErgonCredit className="mt-6 lg:mt-4" />
         </div>
       </main>
-      <Marquee words={t('link.marqueeBottom')} reverse />
     </div>
   );
 }

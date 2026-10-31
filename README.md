@@ -1,7 +1,7 @@
-# Athanasiadou Law Firm website
+# H.A. Andreou & Co website
 
-Public website, live chat and admin console for Athanasiadou Law Firm (Larnaca, Cyprus).
-Design inspired by neo.law, using the Athanasiadou logo and colours (gold #BFA575, black, wine #402328).
+Public website, live chat and admin console for H.A. Andreou & Co (Helena Antonis Andreou LLC), Larnaca, Cyprus.
+Design inspired by neo.law, using the H.A. Andreou & Co logo colours (navy #2A4475 and gold #B08B4F).
 
 Stack: React + Vite + Tailwind (client), Node.js + Express (server), PostgreSQL.
 
@@ -45,8 +45,23 @@ Office hours, chat greetings and the careers introduction are translated in admi
 * **Careers**: job applications with CV download, status and notes, and the open positions shown on the website
 * **Settings**: firm contact details, office hours, chat greetings, translations, social links (Facebook, Instagram and LinkedIn show on the website and `/link` only when filled in)
 
-The three lawyers in the starter content are placeholders. Replace them from the admin console.
+Starter content (team, photos, expertise areas, contact details) was imported from ahllc.com.cy. Expertise images are stock photos (see Photo credits). Photos and images are in `server/seed-images` and are loaded into the database on first start. Support staff are imported but hidden; show them from Lawyers in the admin console.
 
 ## Deploy on Render
 
 `render.yaml` creates the web service and a Postgres database. Set `ADMIN_PASSWORD` in the Render dashboard. For email notifications add the `SMTP_*`, `MAIL_FROM` and `NOTIFY_EMAIL` variables (see `.env.example`).
+
+## Photo credits
+
+The page header photos (client/public/heroes) and the expertise photos (server/seed-images/areas) are free stock photos from Unsplash (unsplash.com), used under the Unsplash License, which allows commercial use without attribution.
+
+The homepage background video (client/public/video/hero-larnaca.mp4) is an aerial clip of Larnaca from Pexels (pexels.com/video/40014781), used under the Pexels License, which also allows commercial use without attribution. To switch the homepage back to the animated network background, set `HERO_BACKGROUND = 'network'` at the top of client/src/pages/Home.jsx.
+
+## Emails and opening hours
+
+With the SMTP settings in place (see .env.example), the website sends:
+
+* to the office: every enquiry, every job application with the CV attached, every new live chat, and new messages in an ongoing chat (at most one email every 15 minutes per chat);
+* to visitors, in the language they used on the website: a confirmation after an enquiry (with the promised reply time, 2 working days by default), a confirmation after a job application, and the team's live chat replies if they have left the website.
+
+The live chat greeting follows the opening hours in Admin > Settings (Cyprus time, with closed dates for holidays). Use "Send a test email" on the same page to check the setup.

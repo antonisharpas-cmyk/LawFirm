@@ -268,7 +268,7 @@ function Positions({ jobs, setJobs }) {
               <div className="sm:col-span-3"><label className="a-label">Job title *</label><input className="a-input" value={editing.title} onChange={set('title')} /></div>
               <div><label className="a-label">Location</label><input className="a-input" value={editing.location} onChange={set('location')} /></div>
               <div><label className="a-label">Type</label><input className="a-input" value={editing.employment_type} onChange={set('employment_type')} placeholder="Full time, Part time…" /></div>
-              <label className="flex items-end gap-2 pb-3 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#BFA575]" checked={editing.published !== false} onChange={set('published')} /> Show on website</label>
+              <label className="flex items-end gap-2 pb-3 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#B08B4F]" checked={editing.published !== false} onChange={set('published')} /> Show on website</label>
             </div>
             <div><label className="a-label">Short summary</label><textarea className="a-input min-h-[60px]" value={editing.summary} onChange={set('summary')} /></div>
             <div><label className="a-label">About the role</label><textarea className="a-input min-h-[140px]" value={editing.description} onChange={set('description')} /><p className="mt-1 text-xs text-ink/40">Leave an empty line between paragraphs</p></div>

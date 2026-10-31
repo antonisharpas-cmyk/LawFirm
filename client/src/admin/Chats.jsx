@@ -103,7 +103,7 @@ export default function Chats({ onChange }) {
 
   return (
     <>
-      <PageTitle title="Live Chat" subtitle="Reply to visitors chatting on the website. While this page is open, visitors see that the team is online." />
+      <PageTitle title="Live Chat" subtitle="Reply to visitors chatting on the website. During the office opening hours set in Settings, visitors see that the team is online; outside them, they get the away greeting." />
       <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
         <div className={`overflow-hidden rounded-2xl bg-white shadow-sm ${active ? 'hidden lg:block' : ''}`}>
           {loading ? (
@@ -152,7 +152,7 @@ export default function Chats({ onChange }) {
                   </p>
                 </div>
                 {active.visitor_email && (
-                  <a className="a-btn-ghost !py-2" href={`mailto:${active.visitor_email}?subject=${encodeURIComponent('Your chat with Athanasiadou Law Firm')}`}><Icon name="mail" /> Email</a>
+                  <a className="a-btn-ghost !py-2" href={`mailto:${active.visitor_email}?subject=${encodeURIComponent('Your chat with H.A. Andreou & Co')}`}><Icon name="mail" /> Email</a>
                 )}
                 {active.status === 'open' ? (
                   <button className="a-btn-ghost !py-2" onClick={() => setStatus('closed')}>Close</button>

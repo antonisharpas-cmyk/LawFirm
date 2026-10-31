@@ -6,7 +6,7 @@ export default function About() {
   const { t } = useI18n();
   return (
     <>
-      <PageHero eyebrow={t('about.eyebrow')} title={t('about.title')} intro={t('about.intro')} />
+      <PageHero eyebrow={t('about.eyebrow')} title={t('about.title')} intro={t('about.intro')} image="/heroes/about.jpg" />
 
       <section className="bg-white py-24 sm:py-32">
         <div className="container-x grid gap-16 lg:grid-cols-2 lg:gap-24">

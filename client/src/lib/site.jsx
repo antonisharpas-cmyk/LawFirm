@@ -2,11 +2,14 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from './api.js';
 
 const FALLBACK = {
-  firm_name: 'Athanasiadou Law Firm',
-  email: 'info@athanasiadoulaw.com',
-  phone: '+357 24 044835',
-  address_line1: 'Panagioti Kanellopoulou 18, Sakkas Court 3, Office 102',
-  address_line2: '6057 Larnaca, Cyprus',
+  firm_name: 'H.A. Andreou & Co',
+  legal_name: 'Helena Antonis Andreou LLC',
+  email: 'info@ahllc.com.cy',
+  phone: '+357 24 656765',
+  fax: '+357 24 824424',
+  address_line1: '4 United Nations Street, Anastasia Building, 2nd & 3rd Floor',
+  address_line2: '6042 Larnaca, Cyprus',
+  map_location: 'Inomenon Ethnon 4, Larnaca 6042, Cyprus',
   hours: 'Monday to Friday, 9:00 to 17:00'
 };
 

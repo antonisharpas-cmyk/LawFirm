@@ -9,7 +9,7 @@ export default function Lawyers() {
   const { t, tr } = useI18n();
   return (
     <>
-      <PageHero eyebrow={t('lawyers.eyebrow')} title={t('lawyers.title')} intro={t('lawyers.intro')} />
+      <PageHero eyebrow={t('lawyers.eyebrow')} title={t('lawyers.title')} intro={t('lawyers.intro')} image="/heroes/lawyers.jpg" />
       <section className="bg-paper py-20 sm:py-28">
         <div className="container-x">
           {loaded && lawyers.length === 0 && <p className="text-center text-ink/50">{t('lawyers.soon')}</p>}

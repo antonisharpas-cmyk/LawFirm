@@ -18,15 +18,15 @@ import Careers from './pages/Careers.jsx';
 const AdminApp = lazy(() => import('./admin/AdminApp.jsx'));
 
 const TITLES = {
-  '/': 'Athanasiadou Law Firm | Lawyers in Larnaca, Cyprus',
-  '/lawyers': 'Our Lawyers | Athanasiadou Law Firm',
-  '/expertise': 'Expertise | Athanasiadou Law Firm',
-  '/careers': 'Careers | Athanasiadou Law Firm',
-  '/about': 'About | Athanasiadou Law Firm',
-  '/contact': 'Contact | Athanasiadou Law Firm',
-  '/privacy': 'Privacy Policy | Athanasiadou Law Firm',
-  '/terms': 'Terms & Conditions | Athanasiadou Law Firm',
-  '/cookies': 'Cookie Policy | Athanasiadou Law Firm'
+  '/': 'H.A. Andreou & Co | Advocates, Legal Consultants, Larnaca',
+  '/lawyers': 'Our Lawyers | H.A. Andreou & Co',
+  '/expertise': 'Expertise | H.A. Andreou & Co',
+  '/careers': 'Careers | H.A. Andreou & Co',
+  '/about': 'About | H.A. Andreou & Co',
+  '/contact': 'Contact | H.A. Andreou & Co',
+  '/privacy': 'Privacy Policy | H.A. Andreou & Co',
+  '/terms': 'Terms & Conditions | H.A. Andreou & Co',
+  '/cookies': 'Cookie Policy | H.A. Andreou & Co'
 };
 
 function ScrollManager() {

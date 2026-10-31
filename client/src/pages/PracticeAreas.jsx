@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { PageHero, Reveal, Arrow, Avatar } from '../components/ui.jsx';
+import { PageHero, Reveal, Arrow, Avatar, RichText } from '../components/ui.jsx';
 import { useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
@@ -17,7 +17,7 @@ export default function PracticeAreas() {
 
   return (
     <>
-      <PageHero eyebrow={t('home.expEyebrow')} title={t('home.expTitle')} intro={t('expertise.intro')} />
+      <PageHero eyebrow={t('home.expEyebrow')} title={t('home.expTitle')} intro={t('expertise.intro')} image="/heroes/expertise.jpg" />
       <section className="bg-white py-20 sm:py-28">
         <div className="container-x">
           <div className="grid gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 md:grid-cols-2">
@@ -30,11 +30,16 @@ export default function PracticeAreas() {
                   delay={(i % 2) * 80}
                   className={`group relative scroll-mt-32 bg-white p-8 transition hover:bg-paper sm:p-12 ${hash === `#${a.slug}` ? '!bg-paper' : ''}`}
                 >
-                  <div className="absolute start-0 top-0 h-full w-[2px] origin-top scale-y-0 bg-gold transition duration-500 group-hover:scale-y-100" />
+                  <div className="absolute start-0 top-0 z-10 h-full w-[2px] origin-top scale-y-0 bg-gold transition duration-500 group-hover:scale-y-100" />
+                  {a.image_url && (
+                    <div className="-mx-8 -mt-8 mb-8 aspect-[16/7] overflow-hidden bg-ink-700 sm:-mx-12 sm:-mt-12 sm:mb-10">
+                      <img src={a.image_url} alt="" loading="lazy" className="h-full w-full object-cover opacity-90 grayscale transition duration-700 group-hover:scale-[1.03] group-hover:opacity-100" />
+                    </div>
+                  )}
                   <span className="text-[11px] tabular-nums tracking-widest text-gold">{String(i + 1).padStart(2, '0')}</span>
                   <h2 className="mt-4 font-heading text-3xl">{tr(a, 'name')}</h2>
                   <p className="mt-4 font-medium leading-relaxed text-ink/70">{tr(a, 'summary')}</p>
-                  {tr(a, 'body') && <p className="mt-4 text-[15px] leading-relaxed text-ink/55">{tr(a, 'body')}</p>}
+                  {tr(a, 'body') && <RichText text={tr(a, 'body')} className="mt-4 text-[15px] leading-relaxed text-ink/55" />}
                   {team.length > 0 && (
                     <div className="mt-8 border-t border-ink/10 pt-6">
                       <p className="eyebrow !text-[10px] !text-gold-dark">{t('expertise.related')}</p>

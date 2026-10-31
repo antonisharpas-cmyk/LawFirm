@@ -13,6 +13,7 @@ function Login({ onLogin }) {
   const [f, setF] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [show, setShow] = useState(false);
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -30,11 +31,26 @@ function Login({ onLogin }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ink px-5">
       <form onSubmit={submit} className="w-full max-w-sm rounded-2xl border border-white/10 bg-ink-800 p-8 text-white shadow-2xl">
-        <img src="/logo.png" alt="Athanasiadou Law Firm" className="mx-auto h-9" />
+        <img src="/logo-full.png" alt="H.A. Andreou & Co" className="mx-auto w-64" />
         <p className="eyebrow mt-8 text-center">Admin Console</p>
         <div className="mt-6 space-y-3">
           <input className="field-dark" placeholder="Username" autoComplete="username" value={f.username} onChange={(e) => setF({ ...f, username: e.target.value })} />
-          <input className="field-dark" type="password" placeholder="Password" autoComplete="current-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} />
+          <div className="relative">
+            <input className="field-dark pe-12" type={show ? 'text' : 'password'} placeholder="Password" autoComplete="current-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} />
+            <button
+              type="button"
+              onClick={() => setShow((v) => !v)}
+              aria-label={show ? 'Hide password' : 'Show password'}
+              title={show ? 'Hide password' : 'Show password'}
+              className="absolute inset-y-0 end-0 flex w-12 items-center justify-center text-white/50 transition hover:text-gold"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                <circle cx="12" cy="12" r="3" />
+                {show && <path d="M4 4l16 16" />}
+              </svg>
+            </button>
+          </div>
         </div>
         {error && <p className="mt-3 text-sm text-red-300">{error}</p>}
         <button className="btn-gold mt-6 w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign In'}</button>
@@ -75,7 +91,7 @@ export default function AdminApp() {
   }, [logout]);
 
   useEffect(() => {
-    document.title = 'Admin | Athanasiadou Law Firm';
+    document.title = 'Admin | H.A. Andreou & Co';
     document.documentElement.dir = 'ltr';
     document.documentElement.lang = 'en';
     if (!authed) return;
@@ -87,7 +103,7 @@ export default function AdminApp() {
 
   useEffect(() => {
     const n = stats.newInquiries + stats.unreadChats + (stats.newApplications || 0);
-    document.title = `${n ? `(${n}) ` : ''}Admin | Athanasiadou Law Firm`;
+    document.title = `${n ? `(${n}) ` : ''}Admin | H.A. Andreou & Co`;
   }, [stats]);
 
   useEffect(() => setMenu(false), [pathname]);
@@ -97,7 +113,7 @@ export default function AdminApp() {
   const sidebar = (
     <div className="flex h-full flex-col">
       <div className="px-6 pb-6 pt-7">
-        <img src="/logo.png" alt="Athanasiadou Law Firm" className="h-7" />
+        <img src="/logo.png" alt="H.A. Andreou & Co" className="w-48" />
         <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-white/35">Admin Console</p>
       </div>
       <nav className="flex-1 space-y-1 px-3">
@@ -134,7 +150,7 @@ export default function AdminApp() {
 
       {/* mobile top bar */}
       <div className="sticky top-0 z-30 flex items-center justify-between bg-ink px-4 py-3 lg:hidden">
-        <img src="/logo.png" alt="" className="h-6" />
+        <img src="/logo.png" alt="" className="w-40" />
         <button onClick={() => setMenu(true)} className="relative rounded-lg p-2 text-white" aria-label="Open menu">
           <Icon name="menu" className="h-5 w-5" />
           {stats.newInquiries + stats.unreadChats > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gold" />}

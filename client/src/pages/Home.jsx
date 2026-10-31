@@ -1,22 +1,51 @@
 import { Link } from 'react-router-dom';
 import Constellation from '../components/Constellation.jsx';
-import InquiryForm from '../components/InquiryForm.jsx';
 import LawyerCard from '../components/LawyerCard.jsx';
 import { Reveal, Arrow, StarMark } from '../components/ui.jsx';
-import { useSite, telHref } from '../lib/site.jsx';
+import { useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
+// Homepage hero background: 'video' (Larnaca aerial) or 'network' (animated constellation).
+// Switch back to 'network' to restore the previous look.
+const HERO_BACKGROUND = 'video';
+
+function HeroVideo() {
+  return (
+    <>
+      <video
+        className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
+        src="/video/hero-larnaca.mp4"
+        poster="/video/hero-larnaca.jpg"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+      />
+      <img src="/video/hero-larnaca.jpg" alt="" aria-hidden="true" className="absolute inset-0 hidden h-full w-full object-cover motion-reduce:block" />
+      <div className="absolute inset-0 bg-ink/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-transparent to-ink/80" />
+    </>
+  );
+}
+
 export default function Home() {
-  const { settings, areas, lawyers } = useSite();
+  const { areas, lawyers } = useSite();
   const { t, tr } = useI18n();
-  const address = `${settings.address_line1}, ${settings.address_line2}`;
 
   return (
     <>
       {/* HERO */}
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-ink text-white">
-        <Constellation />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(11,10,9,0.85)_100%)]" />
+        {HERO_BACKGROUND === 'video' ? (
+          <HeroVideo />
+        ) : (
+          <>
+            <Constellation />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(14,26,48,0.85)_100%)]" />
+          </>
+        )}
         <div className="container-x relative py-32 text-center">
           <p className="eyebrow animate-fadeIn">{t('home.heroEyebrow')}</p>
           <h1 className="h-display mx-auto mt-7 max-w-4xl animate-fadeUp text-[2.6rem] sm:text-6xl lg:text-7xl">{t('home.heroTitle')}</h1>
@@ -136,31 +165,14 @@ export default function Home() {
 
       {/* CONTACT */}
       <section className="bg-paper-dark py-24 sm:py-32" id="contact">
-        <div className="container-x grid gap-14 lg:grid-cols-2 lg:gap-20">
-          <Reveal>
+        <Reveal className="container-x">
+          <div>
             <p className="eyebrow eyebrow-line">{t('home.contactEyebrow')}</p>
             <h2 className="h-display mt-6 text-4xl sm:text-5xl">{t('home.contactTitle')}</h2>
             <p className="mt-6 max-w-md leading-relaxed text-ink/60">{t('home.contactText')}</p>
-            <div className="mt-10 space-y-6">
-              {[
-                [t('home.callUs'), <span dir="ltr">{settings.phone}</span>, telHref(settings.phone), false],
-                [t('home.email'), settings.email, `mailto:${settings.email}`, false],
-                [t('home.visit'), address, 'https://maps.google.com/?q=' + encodeURIComponent(address), true]
-              ].map(([l, v, href, ext]) => (
-                <a key={l} href={href} target={ext ? '_blank' : undefined} rel="noreferrer" className="group flex gap-5">
-                  <span className="mt-1 h-px w-8 shrink-0 bg-gold transition-all group-hover:w-12" />
-                  <span>
-                    <span className="eyebrow block !text-[10px] !text-ink/40">{l}</span>
-                    <span className="mt-1 block text-[15px] transition group-hover:text-gold-dark">{v}</span>
-                  </span>
-                </a>
-              ))}
-            </div>
-          </Reveal>
-          <Reveal delay={150}>
-            <InquiryForm />
-          </Reveal>
-        </div>
+            <Link to="/contact" className="btn-gold mt-10">{t('common.contactUs')}</Link>
+          </div>
+        </Reveal>
       </section>
     </>
   );

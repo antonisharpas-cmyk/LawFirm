@@ -47,8 +47,8 @@ export default function Header() {
       >
         <div className="absolute start-0 top-0 h-[2px] bg-gold transition-[width] duration-150" style={{ width: `${progress * 100}%` }} />
         <div className={`container-x flex items-center justify-between gap-4 transition-all duration-500 ${scrolled ? 'h-[72px]' : 'h-[92px]'}`}>
-          <Link to="/" className="min-w-0 shrink" aria-label="Athanasiadou Law Firm">
-            <img src="/logo.png" alt="Athanasiadou Law Firm" className={`w-auto max-w-full object-contain transition-all duration-500 ${scrolled ? 'h-7 sm:h-8' : 'h-8 sm:h-10'}`} />
+          <Link to="/" className="min-w-0 shrink" aria-label="H.A. Andreou & Co">
+            <img src="/logo.png" alt="H.A. Andreou & Co" className={`w-auto max-w-full object-contain transition-all duration-500 ${scrolled ? 'h-[16px] sm:h-5' : 'h-[18px] sm:h-6'}`} />
           </Link>
 
           <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Main">

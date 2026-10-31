@@ -1,15 +1,15 @@
 {
-  "name": "athanasiadou-law",
+  "name": "ha-andreou-law",
   "version": "1.0.0",
   "private": true,
-  "description": "Athanasiadou Law Firm website, live chat and admin console",
+  "description": "H.A. Andreou & Co website, live chat and admin console",
   "type": "module",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "dev": "concurrently -n api,web -c yellow,cyan \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:server": "node --watch server/index.js",
+    "dev:server": "node --watch-path=server server/index.js",
     "dev:client": "npm --prefix client run dev",
     "build": "npm --prefix client install --include=dev && npm --prefix client run build",
     "start": "node server/index.js"

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 // Animated network of gold points for the hero background.
-export default function Constellation({ density = 0.00009, color = '191,165,117' }) {
+export default function Constellation({ density = 0.00009, color = '176,139,79' }) {
   const ref = useRef(null);
 
   useEffect(() => {

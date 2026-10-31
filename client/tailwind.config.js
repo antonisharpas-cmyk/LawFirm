@@ -4,23 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Brand colours taken from athanasiadoulaw.com and its logo
+        // Brand colours from the H.A. Andreou & Co logo (navy and gold)
         gold: {
-          DEFAULT: '#BFA575',
-          light: '#D4BF96',
-          deep: '#CBA557',
-          dark: '#9C8455'
+          DEFAULT: '#B08B4F',
+          light: '#C9A870',
+          deep: '#B08B4F',
+          dark: '#8C6C38'
         },
-        wine: '#402328',
+        brand: '#2A4475',
+        wine: '#5A2A33',
         ink: {
-          DEFAULT: '#0B0A09',
-          800: '#141210',
-          700: '#1C1A18',
-          600: '#262320'
+          DEFAULT: '#0E1A30',
+          800: '#13213B',
+          700: '#172844',
+          600: '#1F3354'
         },
         paper: {
-          DEFAULT: '#FAF8F4',
-          dark: '#F3EFE7'
+          DEFAULT: '#F7F6F2',
+          dark: '#EEEBE4'
         }
       },
       fontFamily: {

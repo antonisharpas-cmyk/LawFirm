@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useSite, telHref } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
+import { SocialLinks } from './ui.jsx';
 
 export function ErgonCredit({ className = '' }) {
   const { t } = useI18n();
@@ -22,27 +23,14 @@ export default function Footer() {
   const { settings, areas } = useSite();
   const { t, tr, ts } = useI18n();
   const year = new Date().getFullYear();
-  const socials = [
-    ['Facebook', settings.facebook],
-    ['Instagram', settings.instagram],
-    ['LinkedIn', settings.linkedin]
-  ].filter(([, url]) => url);
 
   return (
     <footer className="bg-ink text-white/60">
       <div className="container-x grid gap-12 py-20 md:grid-cols-2 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <img src="/logo.png" alt="Athanasiadou Law Firm" className="h-10 w-auto" />
-          <p className="mt-6 max-w-sm text-sm leading-relaxed">{t('footer.tagline')}</p>
-          {socials.length > 0 && (
-            <div className="mt-6 flex gap-4">
-              {socials.map(([label, url]) => (
-                <a key={label} href={url} target="_blank" rel="noreferrer" className="text-xs uppercase tracking-[0.16em] hover:text-gold">
-                  {label}
-                </a>
-              ))}
-            </div>
-          )}
+          <img src="/logo-full.png" alt="H.A. Andreou & Co, Advocates, Legal Consultants" className="w-64 max-w-full" />
+          <p className="mt-8 max-w-sm text-sm leading-relaxed">{t('footer.tagline')}</p>
+          <SocialLinks settings={settings} className="mt-6" />
         </div>
 
         <div className="lg:col-span-2">
@@ -83,6 +71,12 @@ export default function Footer() {
             </p>
             <p>
               <a href={telHref(settings.phone)} className="hover:text-gold"><span dir="ltr">{settings.phone}</span></a>
+              {settings.fax && (
+                <>
+                  <br />
+                  <span>{t('footer.fax')} <span dir="ltr">{settings.fax}</span></span>
+                </>
+              )}
               <br />
               <a href={`mailto:${settings.email}`} className="hover:text-gold">{settings.email}</a>
             </p>
@@ -92,7 +86,7 @@ export default function Footer() {
       </div>
       <div className="border-t border-white/10">
         <div className="container-x grid items-center gap-5 pb-24 pt-7 text-center text-xs lg:grid-cols-3 lg:pb-7 lg:text-start xl:pe-24">
-          <p className="order-3 lg:order-1">© {year} {settings.firm_name}. {t('footer.rights')}</p>
+          <p className="order-3 lg:order-1">© {year} {settings.legal_name || settings.firm_name}. {t('footer.rights')}</p>
           <ErgonCredit className="order-2" />
           <nav className="order-1 flex flex-wrap justify-center gap-x-6 gap-y-2 lg:order-3 lg:justify-end" aria-label="Legal">
             <Link to="/terms" className="hover:text-gold">{t('footer.terms')}</Link>

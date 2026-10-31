@@ -70,7 +70,7 @@ function JobCard({ job, open, onToggle, onApply }) {
 }
 
 function ApplicationForm({ jobs, jobId, setJobId }) {
-  const { t, tr } = useI18n();
+  const { t, tr, lang } = useI18n();
   const empty = { name: '', email: '', phone: '', linkedin: '', message: '', consent: false, website: '' };
   const [f, setF] = useState(empty);
   const [cv, setCv] = useState(null);
@@ -96,7 +96,7 @@ function ApplicationForm({ jobs, jobId, setJobId }) {
     if (!cv) return setState({ sending: false, done: false, error: t('careers.errCv') });
     setState({ sending: true, done: false, error: '' });
     try {
-      await api('/api/applications', { method: 'POST', body: { ...f, job_id: jobId === 'general' ? null : jobId, cv: { name: cv.name, dataUrl: cv.dataUrl } } });
+      await api('/api/applications', { method: 'POST', body: { ...f, lang, job_id: jobId === 'general' ? null : jobId, cv: { name: cv.name, dataUrl: cv.dataUrl } } });
       setState({ sending: false, done: true, error: '' });
       setF(empty);
       setCv(null);
@@ -168,7 +168,7 @@ function ApplicationForm({ jobs, jobId, setJobId }) {
       <textarea className="field min-h-[120px] resize-y" placeholder={t('careers.about')} value={f.message} onChange={set('message')} maxLength={8000} />
 
       <label className="flex cursor-pointer items-start gap-3 text-[13px] text-ink/55">
-        <input type="checkbox" checked={f.consent} onChange={set('consent')} className="mt-0.5 h-4 w-4 shrink-0 accent-[#BFA575]" />
+        <input type="checkbox" checked={f.consent} onChange={set('consent')} className="mt-0.5 h-4 w-4 shrink-0 accent-[#B08B4F]" />
         <span>
           {t('careers.consentA')} <Link to="/privacy" className="text-gold underline underline-offset-2">{t('form.consentLink')}</Link>.
         </span>
@@ -209,6 +209,7 @@ export default function Careers() {
         eyebrow={t('careers.eyebrow')}
         title={t('careers.title')}
         intro={ts(settings, 'careers_intro')}
+        image="/heroes/careers.jpg"
       >
         <div className="mt-10 flex animate-fadeUp flex-col gap-4 [animation-delay:300ms] sm:flex-row">
           <a href="#positions" className="btn-gold">{t('careers.viewOpen')}</a>

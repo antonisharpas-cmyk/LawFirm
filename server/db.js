@@ -2,8 +2,20 @@
 // Uses PostgreSQL when DATABASE_URL is set (production on Render).
 // Without DATABASE_URL it runs an in memory Postgres (pg-mem) so the
 // project works locally straight away. In memory data resets on restart.
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import pg from 'pg';
-import { seedLawyers, seedPracticeAreas, seedJobs, seedI18n } from './seed.js';
+import { seedLawyers, seedPracticeAreas, seedJobs } from './seed.js';
+
+const SEED_IMAGES = path.join(path.dirname(fileURLToPath(import.meta.url)), 'seed-images');
+function seedImage(rel) {
+  try {
+    return fs.readFileSync(path.join(SEED_IMAGES, rel)).toString('base64');
+  } catch {
+    return null;
+  }
+}
 
 let pool;
 export let usingMemoryDb = false;
@@ -62,7 +74,10 @@ const SCHEMA = [
     body TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     published BOOLEAN NOT NULL DEFAULT TRUE,
-    i18n TEXT NOT NULL DEFAULT '{}'
+    i18n TEXT NOT NULL DEFAULT '{}',
+    image TEXT,
+    image_type TEXT,
+    image_version INTEGER NOT NULL DEFAULT 0
   )`,
   `CREATE TABLE IF NOT EXISTS inquiries (
     id SERIAL PRIMARY KEY,
@@ -90,6 +105,7 @@ const SCHEMA = [
     unread_admin INTEGER NOT NULL DEFAULT 0,
     unread_visitor INTEGER NOT NULL DEFAULT 0,
     page TEXT NOT NULL DEFAULT '',
+    lang TEXT NOT NULL DEFAULT 'en',
     last_message_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
@@ -137,24 +153,46 @@ const SCHEMA = [
 ];
 
 export const DEFAULT_SETTINGS = {
-  firm_name: 'Athanasiadou Law Firm',
-  email: 'info@athanasiadoulaw.com',
-  phone: '+357 24 044835',
-  address_line1: 'Panagioti Kanellopoulou 18, Sakkas Court 3, Office 102',
-  address_line2: '6057 Larnaca, Cyprus',
+  firm_name: 'H.A. Andreou & Co',
+  legal_name: 'Helena Antonis Andreou LLC',
+  email: 'info@ahllc.com.cy',
+  phone: '+357 24 656765',
+  fax: '+357 24 824424',
+  address_line1: '4 United Nations Street, Anastasia Building, 2nd & 3rd Floor',
+  address_line2: '6042 Larnaca, Cyprus',
+  map_location: 'Inomenon Ethnon 4, Larnaca 6042, Cyprus',
   hours: 'Monday to Friday, 9:00 to 17:00',
-  chat_welcome: 'Welcome to Athanasiadou Law Firm. How can we help you today? A member of our team will reply here as soon as possible.',
+  // Opening hours used by the live chat (Cyprus time). Days: 1 Monday ... 7 Sunday.
+  office_days: '1,2,3,4,5',
+  office_open: '09:00',
+  office_close: '17:00',
+  // One date per line: YYYY-MM-DD for a single day, or MM-DD for every year. Text after # is a note.
+  office_closed_dates: [
+    '01-01 # New Year',
+    '01-06 # Epiphany',
+    '03-25 # Greek Independence Day',
+    '04-01 # Cyprus National Day',
+    '05-01 # Labour Day',
+    '08-15 # Assumption',
+    '10-01 # Cyprus Independence Day',
+    '10-28 # Ochi Day',
+    '12-25 # Christmas',
+    '12-26 # Boxing Day'
+  ].join('\n'),
+  reply_days: '2',
+  notify_email: '',
+  chat_welcome: 'Welcome to H.A. Andreou & Co. How can we help you today? A member of our team will reply here as soon as possible.',
   chat_offline: 'Our team is currently away. Leave your message and your email, and we will get back to you.',
-  facebook: '',
+  facebook: 'https://www.facebook.com/Andreou-Hji-Christofis-Co-108736367518135',
   instagram: '',
-  linkedin: '',
+  linkedin: 'https://www.linkedin.com/company/andreou-hji-christofis-co/',
   careers_intro: 'We are always pleased to hear from talented, motivated people who share our commitment to clients. Explore our open positions below or send us a general application.',
   hours_el: 'Δευτέρα έως Παρασκευή, 9:00 έως 17:00',
   hours_ru: 'С понедельника по пятницу, с 9:00 до 17:00',
   hours_he: 'ימים שני עד שישי, 9:00 עד 17:00',
-  chat_welcome_el: 'Καλώς ήρθατε στο Athanasiadou Law Firm. Πώς μπορούμε να σας βοηθήσουμε; Ένα μέλος της ομάδας μας θα σας απαντήσει εδώ το συντομότερο.',
-  chat_welcome_ru: 'Добро пожаловать в Athanasiadou Law Firm. Чем мы можем помочь? Сотрудник нашей команды ответит вам здесь в ближайшее время.',
-  chat_welcome_he: 'ברוכים הבאים ל Athanasiadou Law Firm. איך נוכל לעזור? נציג מהצוות שלנו יענה לכם כאן בהקדם.',
+  chat_welcome_el: 'Καλώς ήρθατε στο H.A. Andreou & Co. Πώς μπορούμε να σας βοηθήσουμε; Ένα μέλος της ομάδας μας θα σας απαντήσει εδώ το συντομότερο.',
+  chat_welcome_ru: 'Добро пожаловать в H.A. Andreou & Co. Чем мы можем помочь? Сотрудник нашей команды ответит вам здесь в ближайшее время.',
+  chat_welcome_he: 'ברוכים הבאים ל H.A. Andreou & Co. איך נוכל לעזור? נציג מהצוות שלנו יענה לכם כאן בהקדם.',
   chat_offline_el: 'Η ομάδα μας δεν είναι διαθέσιμη αυτή τη στιγμή. Αφήστε το μήνυμα και το email σας και θα επικοινωνήσουμε μαζί σας.',
   chat_offline_ru: 'Сейчас наша команда не в сети. Оставьте сообщение и ваш email, и мы свяжемся с вами.',
   chat_offline_he: 'הצוות שלנו אינו זמין כרגע. השאירו הודעה וכתובת אימייל ונחזור אליכם.',
@@ -173,15 +211,23 @@ export async function initDb() {
     for (const t of ['lawyers', 'practice_areas', 'jobs']) {
       await pool.query(`ALTER TABLE ${t} ADD COLUMN IF NOT EXISTS i18n TEXT NOT NULL DEFAULT '{}'`);
     }
+    await pool.query("ALTER TABLE chat_sessions ADD COLUMN IF NOT EXISTS lang TEXT NOT NULL DEFAULT 'en'");
+    await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS image TEXT');
+    await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS image_type TEXT');
+    await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS image_version INTEGER NOT NULL DEFAULT 0');
   }
 
   const [{ count: lawyerCount }] = await query('SELECT COUNT(*)::int AS count FROM lawyers');
   if (Number(lawyerCount) === 0) {
     for (const [i, l] of seedLawyers.entries()) {
       await query(
-        `INSERT INTO lawyers (slug, name, title, email, phone, languages, education, admissions, practice_areas, summary, bio, sort_order, i18n)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-        [l.slug, l.name, l.title, l.email, l.phone, l.languages, l.education, l.admissions, l.practice_areas, l.summary, l.bio, i, JSON.stringify(seedI18n.lawyers[l.slug] || {})]
+        `INSERT INTO lawyers (slug, name, title, email, phone, languages, education, admissions, practice_areas, summary, bio, sort_order, i18n, published, photo, photo_type, photo_version)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+        (() => {
+          const photo = l.photo ? seedImage(l.photo) : null;
+          return [l.slug, l.name, l.title, l.email, l.phone, l.languages, l.education, l.admissions, l.practice_areas, l.summary, l.bio, i,
+            JSON.stringify(l.i18n || {}), l.published !== false, photo, photo ? 'image/jpeg' : null, photo ? 1 : 0];
+        })()
       );
     }
   }
@@ -190,10 +236,23 @@ export async function initDb() {
   if (Number(areaCount) === 0) {
     for (const [i, a] of seedPracticeAreas.entries()) {
       await query(
-        'INSERT INTO practice_areas (slug, name, summary, body, sort_order, i18n) VALUES ($1,$2,$3,$4,$5,$6)',
-        [a.slug, a.name, a.summary, a.body, i, JSON.stringify(seedI18n.areas[a.slug] || {})]
+        'INSERT INTO practice_areas (slug, name, summary, body, sort_order, i18n, image, image_type, image_version) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+        (() => {
+          const img = a.image ? seedImage(a.image) : null;
+          return [a.slug, a.name, a.summary, a.body, i, JSON.stringify(a.i18n || {}), img, img ? 'image/jpeg' : null, img ? 1 : 0];
+        })()
       );
     }
+  }
+
+  // Refresh expertise images that still use a starter image (never replaced in the admin console),
+  // so updated starter photos also reach databases created before the update.
+  for (const a of seedPracticeAreas) {
+    if (!a.image) continue;
+    const row = await one('SELECT id, image, image_version FROM practice_areas WHERE slug = $1', [a.slug]);
+    if (!row || Number(row.image_version) !== 1) continue;
+    const img = seedImage(a.image);
+    if (img && img !== row.image) await query('UPDATE practice_areas SET image = $1, image_type = $2 WHERE id = $3', [img, 'image/jpeg', row.id]);
   }
 
   const [{ count: jobCount }] = await query('SELECT COUNT(*)::int AS count FROM jobs');
@@ -202,7 +261,7 @@ export async function initDb() {
     for (const [i, j] of seedJobs.entries()) {
       await query(
         'INSERT INTO jobs (slug, title, location, employment_type, summary, description, requirements, sort_order, i18n) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-        [j.slug, j.title, j.location, j.employment_type, j.summary, j.description, j.requirements, i, JSON.stringify(seedI18n.jobs[j.slug] || {})]
+        [j.slug, j.title, j.location, j.employment_type, j.summary, j.description, j.requirements, i, JSON.stringify(j.i18n || {})]
       );
     }
     await query("INSERT INTO settings (key, value) VALUES ('jobs_seeded', '1')");

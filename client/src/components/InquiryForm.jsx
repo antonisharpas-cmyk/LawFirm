@@ -24,7 +24,7 @@ export default function InquiryForm({ dark = false, compact = false }) {
     setState({ sending: true, done: false, error: '' });
     try {
       // values are sent in English so the admin inbox is consistent; the language is noted in the message
-      const body = { ...f, message: lang === 'en' ? f.message : `${f.message}\n\n[Website language: ${lang.toUpperCase()}]` };
+      const body = { ...f, lang, message: lang === 'en' ? f.message : `${f.message}\n\n[Website language: ${lang.toUpperCase()}]` };
       await api('/api/inquiries', { method: 'POST', body });
       setState({ sending: false, done: true, error: '' });
       setF(empty);
@@ -70,7 +70,7 @@ export default function InquiryForm({ dark = false, compact = false }) {
       />
 
       <label className={`flex cursor-pointer items-start gap-3 text-[13px] ${dark ? 'text-white/55' : 'text-ink/55'}`}>
-        <input type="checkbox" checked={f.consent} onChange={set('consent')} className="mt-0.5 h-4 w-4 shrink-0 accent-[#BFA575]" />
+        <input type="checkbox" checked={f.consent} onChange={set('consent')} className="mt-0.5 h-4 w-4 shrink-0 accent-[#B08B4F]" />
         <span>
           {t('form.consentA')} <Link to="/privacy" className="text-gold underline underline-offset-2">{t('form.consentLink')}</Link>.
         </span>
