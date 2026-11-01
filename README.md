@@ -45,7 +45,7 @@ Office hours, chat greetings and the careers introduction are translated in admi
 * **Careers**: job applications with CV download, status and notes, and the open positions shown on the website
 * **Settings**: firm contact details, office hours, chat greetings, translations, social links (Facebook, Instagram and LinkedIn show on the website and `/link` only when filled in)
 
-Starter content (team, photos, expertise areas, contact details) was imported from ahllc.com.cy. Expertise images are stock photos (see Photo credits). Photos and images are in `server/seed-images` and are loaded into the database on first start. Support staff are imported but hidden; show them from Lawyers in the admin console.
+Starter content: the team list confirmed by the firm (six people shown on the website and four hidden until their roles are confirmed, all without photos for now, so initials are shown), the expertise areas and the contact details. Expertise images are stock photos (see Photo credits) and live in `server/seed-images`; they are loaded into the database on first start. Lawyer photos can be uploaded from Lawyers in the admin console.
 
 ## Deploy on Render
 

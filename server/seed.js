@@ -4,79 +4,42 @@
 
 const L = (title, el) => ({ title, el });
 const T = {
-  md: L('Managing Director', 'Διευθύνων Σύμβουλος'),
+  managingPartnerF: L('Managing Partner', 'Διευθύνουσα Εταίρος'),
   partnerM: L('Partner', 'Εταίρος'),
-  partnerF: L('Partner', 'Εταίρος'),
   assocM: L('Associate', 'Συνεργάτης Δικηγόρος'),
   assocF: L('Associate', 'Συνεργάτιδα Δικηγόρος'),
-  traineeF: L('Trainee Lawyer', 'Ασκούμενη Δικηγόρος'),
-  accounts: L('Head of Accounts', 'Προϊσταμένη Λογιστηρίου'),
-  paralegal: L('Paralegal', 'Νομική Βοηθός'),
-  pa: L('Legal PA', 'Γραμματέας Δικηγόρου')
+  traineeM: L('Trainee Lawyer', 'Ασκούμενος Δικηγόρος'),
+  none: L('', '') // role to be confirmed by the firm
 };
 const LANG = {
-  ge: { en: 'Greek, English', el: 'Ελληνικά, Αγγλικά' },
-  gef: { en: 'Greek, English, French', el: 'Ελληνικά, Αγγλικά, Γαλλικά' }
+  ge: { en: 'Greek, English', el: 'Ελληνικά, Αγγλικά' }
 };
 
-// published: false = imported but hidden on the website (support staff), can be shown from the admin console
+// The firm's team as confirmed by the firm. No profile photos for now (initials are shown instead);
+// photos can be uploaded later from the admin console.
+// published: false = in the admin console but hidden on the website.
 const people = [
-  ['antonis-andreou', 'Antonis Andreou', T.md, 'a.andreou@ahllc.com.cy', '+357 24 828392', LANG.ge,
-    'Barrister at Law, Lincoln’s Inn School of Law, 1970',
-    'Member of the Cyprus Bar, 1973\nPresident of the Committee responsible for the recognition by the Cyprus Bar Council of law degrees\nMember of the House of Representatives, 1985 to 1991\nFormer Vice President of the Legal Affairs Committee of the House of Representatives\nMember of an ad hoc Committee for the investigation of complaints against the police for ill treatment of detainees, 1994', true],
-  ['helena-andreou', 'Helena Andreou', T.partnerF, 'h.andreou@ahllc.com.cy', '+357 24 828393', LANG.ge,
+  ['helena-andreou', 'Helena Andreou', T.managingPartnerF, 'h.andreou@ahllc.com.cy', '+357 24 828393', LANG.ge,
     'LL.M., International and Commercial Law, University of Sheffield, 1993\nLL.B. (Hons.), University of Leicester, 1992',
     'Member of the Cyprus Bar, 1995', true],
-  ['antonis-pastos', 'Antonis Pastos', T.partnerM, 'a.pastos@ahllc.com.cy', '+357 24 656705', LANG.ge,
-    'LL.M., European Law and Policy, University of Manchester, 2001\nLaw Degree, Aristotle University of Thessaloniki, 1999',
-    'Member of the Cyprus Bar, 2000\nInsolvency Practitioner, 2016', true],
-  ['panayiotis-hji-christofis', 'Panayiotis Hji Christofis', T.partnerM, 'p.hjichristofis@ahllc.com.cy', '+357 24 656717', LANG.ge,
-    'LL.B. (Hons.), University of Sussex, 2004',
-    'Member of the Cyprus Bar, 2005\nInsolvency Practitioner, 2016', true],
-  ['demetris-kallenos', 'Demetris Kallenos', T.partnerM, 'd.kallenos@ahllc.com.cy', '+357 24 656770', LANG.ge,
-    'Law Degree, Democritus University of Thrace, 2005',
-    'Member of the Cyprus Bar, 2006\nMediator, 2014\nInsolvency Practitioner, 2016', true],
-  ['christos-tsangaros', 'Christos Tsangaros', T.partnerM, 'c.tsangaros@ahllc.com.cy', '+357 24 400459', LANG.ge,
-    'LL.B. (Hons.), Coventry University, 2007',
-    'Member of the Cyprus Bar, 2008', true],
-  ['demetra-tofari', 'Demetra Tofari', T.assocF, 'd.tofari@ahllc.com.cy', '+357 24 828374', LANG.ge,
-    'Law Degree, National and Kapodistrian University of Athens, 1995',
-    'Member of the Cyprus Bar, 1996\nMember of the Kilkis Bar, 1999', true],
-  ['kristie-chrysaphi', 'Kristie Chrysaphi', T.assocF, 'k.chrysaphi@ahllc.com.cy', '+357 24 656772', LANG.ge,
-    'LL.B. (Hons.), University of Derby, 2016',
-    'Member of the Cyprus Bar, 2019', true],
-  ['raffaella-sordini', 'Raffaella Sordini', T.assocF, 'r.sordini@ahllc.com.cy', '+357 24 824425', LANG.ge,
-    'L.P.C., BPP University, Manchester, 2015\nLL.B. (Hons.), University of Leicester, 2013',
-    'Member of the Cyprus Bar, 2016', true],
-  ['antroulla-lambrou', 'Antroulla Lambrou', T.assocF, 'al@ahllc.com.cy', '+357 24 656765', LANG.ge,
-    'LL.M. European Business Law, University of Cyprus, 2023\nLL.B., University of Cyprus, 2019',
-    'Member of the Cyprus Bar, 2020', true],
+  ['giorgos-neofytidis', 'Giorgos Neofytidis', T.partnerM, '', '+357 24 656765', LANG.ge, '', '', true],
   ['kyriakos-georgiou', 'Kyriakos Georgiou', T.assocM, 'k.georgiou@ahllc.com.cy', '+357 24 656765', LANG.ge,
     'Law Degree, Democritus University of Thrace, 2021',
-    'Member of the Cyprus Bar, 2022', true],
-  ['maria-hadjisavva', 'Maria Hadjisavva', T.assocF, 'm.hadjisavva@ahllc.com.cy', '+357 24 656765', LANG.ge,
-    'LL.B. (Hons), University of Central Lancashire Cyprus (UCLan), 2020',
     'Member of the Cyprus Bar, 2022', true],
   ['anastasis-mytidis', 'Anastasis Mytidis', T.assocM, 'am@ahllc.com.cy', '+357 24 656765', LANG.ge,
     'LL.B., National and Kapodistrian University of Athens, 2022',
     'Member of the Cyprus Bar Association, 2023', true],
-  ['nagia-demetriou', 'Nagia Demetriou', T.traineeF, 'nd@ahllc.com.cy', '+357 24 656765', LANG.ge,
-    'LL.B. Law (Hons), University of Leeds, 2022', '', true],
-  ['kyriaki-vasileiadou', 'Kyriaki Vasileiadou', T.traineeF, '', '+357 24 656765', LANG.ge,
-    'LL.B. (Hons), SOAS University of London, 2015\nLPC MSc Law, Business and Management, University of Law, Bloomsbury, 2017', '', true],
-  ['alexia-ioannou', 'Alexia Ioannou', T.traineeF, '', '+357 24 656765', LANG.ge,
-    'LL.B. (Hons), Newcastle University, 2022\nLL.M. International Commercial Law, Newcastle University, 2023', '', true],
-  ['anna-andreou', 'Anna Andreou', T.accounts, 'anna.andreou@ahllc.com.cy', '+357 24 656765', LANG.ge, '', '', false],
-  ['kakia-petrou', 'Kakia Petrou', T.paralegal, 'k.petrou@ahllc.com.cy', '+357 24 656717', LANG.gef,
-    'Level 3 Diploma in Paralegal Practice, National Association of Licensed Paralegals (UK), 2022\nDegree in French Language and Literature, University of Cyprus, 2010', '', false],
-  ['katerina-karvela', 'Katerina Karvela', T.pa, 'k.karvela@ahllc.com.cy', '+357 24 656705', LANG.ge, '', '', false],
-  ['maria-charalambous', 'Maria Charalambous', T.pa, 'm.charalambous@ahllc.com.cy', '+357 24 828393', LANG.ge, '', '', false],
-  ['irini-vladimirou', 'Irini Vladimirou', T.pa, 'iv@ahllc.com.cy', '+357 24 656765', LANG.ge,
-    'Degree in Primary Education, University of Cyprus, 2012\nMSc in Environmental Education and Sustainable Development, Frederick University, 2014', '', false],
-  ['vasiliki-papamichael', 'Vasiliki Papamichael', T.pa, 'vp@ahllc.com.cy', '+357 24 656765', LANG.ge,
-    'BSc Speech and Language Therapy, European University Cyprus, 2023', '', false],
-  ['georgia-georgiou', 'Georgia Georgiou', T.pa, 'reception@ahllc.com.cy', '+357 24 656765', LANG.ge,
-    'Degree in Communication and Journalism, University of Indianapolis, Athens Campus, 2013', '', false]
+  ['maria-hadjisavva', 'Maria Hadjisavva', T.assocF, 'm.hadjisavva@ahllc.com.cy', '+357 24 656765', LANG.ge,
+    'LL.B. (Hons), University of Central Lancashire Cyprus (UCLan), 2020',
+    'Member of the Cyprus Bar, 2022', true],
+  ['antonis-neofytou', 'Antonis Neofytou', T.traineeM, '', '+357 24 656765', LANG.ge, '', '', true],
+  // hidden, roles to be confirmed
+  ['alexia-ioannou', 'Alexia Ioannou', T.none, '', '+357 24 656765', LANG.ge,
+    'LL.B. (Hons), Newcastle University, 2022\nLL.M. International Commercial Law, Newcastle University, 2023', '', false],
+  ['kyriaki-vasileiadou', 'Kyriaki Vasileiadou', T.none, '', '+357 24 656765', LANG.ge,
+    'LL.B. (Hons), SOAS University of London, 2015\nLPC MSc Law, Business and Management, University of Law, Bloomsbury, 2017', '', false],
+  ['maria-charalambous', 'Maria Charalambous', T.none, 'm.charalambous@ahllc.com.cy', '+357 24 828393', LANG.ge, '', '', false],
+  ['anna-andreou', 'Anna Andreou', T.none, 'anna.andreou@ahllc.com.cy', '+357 24 656765', LANG.ge, '', '', false]
 ];
 
 export const seedLawyers = people.map(([slug, name, t, email, phone, langs, education, admissions, published]) => ({
@@ -92,9 +55,9 @@ export const seedLawyers = people.map(([slug, name, t, email, phone, langs, educ
   summary: '',
   bio: '',
   published,
-  photo: `team/${slug}.jpg`,
+  photo: null,
   i18n: {
-    el: { title: t.el, languages: langs.el },
+    el: { ...(t.el ? { title: t.el } : {}), languages: langs.el },
   }
 }));
 
