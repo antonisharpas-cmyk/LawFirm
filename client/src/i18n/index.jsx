@@ -1,18 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import en from './en.js';
 import el from './el.js';
-import ru from './ru.js';
-import he from './he.js';
 
 export const LANGUAGES = [
   { code: 'en', short: 'EN', label: 'English', dir: 'ltr' },
-  { code: 'el', short: 'ΕΛ', label: 'Ελληνικά', dir: 'ltr' },
-  { code: 'ru', short: 'RU', label: 'Русский', dir: 'ltr' },
-  { code: 'he', short: 'HE', label: 'עברית', dir: 'rtl' }
+  { code: 'el', short: 'ΕΛ', label: 'Ελληνικά', dir: 'ltr' }
 ];
-const DICTS = { en, el, ru, he };
+const DICTS = { en, el };
 const KEY = 'ath_lang';
-const LOCALES = { en: 'en-GB', el: 'el-GR', ru: 'ru-RU', he: 'he-IL' };
+const LOCALES = { en: 'en-GB', el: 'el-GR' };
 
 function initialLang() {
   try {

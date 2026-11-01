@@ -158,9 +158,11 @@ export const DEFAULT_SETTINGS = {
   email: 'info@ahllc.com.cy',
   phone: '+357 24 656765',
   fax: '+357 24 824424',
-  address_line1: '4 United Nations Street, Anastasia Building, 2nd & 3rd Floor',
-  address_line2: '6042 Larnaca, Cyprus',
-  map_location: 'Inomenon Ethnon 4, Larnaca 6042, Cyprus',
+  address_line1: '23-25 Piliou Street, Giorgos Mattheou Building, Office 501',
+  address_line2: '6037 Larnaca, Cyprus',
+  address_line1_el: 'Πηλίου 23-25, Μέγαρο Γιώργος Ματθαίου, Διαμ./Γραφείο 501',
+  address_line2_el: '6037 Λάρνακα, Κύπρος',
+  map_location: '34.9156651,33.6030268',
   hours: 'Monday to Friday, 9:00 to 17:00',
   // Opening hours used by the live chat (Cyprus time). Days: 1 Monday ... 7 Sunday.
   office_days: '1,2,3,4,5',
@@ -188,20 +190,13 @@ export const DEFAULT_SETTINGS = {
   linkedin: 'https://www.linkedin.com/company/andreou-hji-christofis-co/',
   careers_intro: 'We are always pleased to hear from talented, motivated people who share our commitment to clients. Explore our open positions below or send us a general application.',
   hours_el: 'Δευτέρα έως Παρασκευή, 9:00 έως 17:00',
-  hours_ru: 'С понедельника по пятницу, с 9:00 до 17:00',
-  hours_he: 'ימים שני עד שישי, 9:00 עד 17:00',
   chat_welcome_el: 'Καλώς ήρθατε στο H.A. Andreou & Co. Πώς μπορούμε να σας βοηθήσουμε; Ένα μέλος της ομάδας μας θα σας απαντήσει εδώ το συντομότερο.',
-  chat_welcome_ru: 'Добро пожаловать в H.A. Andreou & Co. Чем мы можем помочь? Сотрудник нашей команды ответит вам здесь в ближайшее время.',
-  chat_welcome_he: 'ברוכים הבאים ל H.A. Andreou & Co. איך נוכל לעזור? נציג מהצוות שלנו יענה לכם כאן בהקדם.',
   chat_offline_el: 'Η ομάδα μας δεν είναι διαθέσιμη αυτή τη στιγμή. Αφήστε το μήνυμα και το email σας και θα επικοινωνήσουμε μαζί σας.',
-  chat_offline_ru: 'Сейчас наша команда не в сети. Оставьте сообщение и ваш email, и мы свяжемся с вами.',
-  chat_offline_he: 'הצוות שלנו אינו זמין כרגע. השאירו הודעה וכתובת אימייל ונחזור אליכם.',
   careers_intro_el: 'Χαιρόμαστε πάντα να γνωρίζουμε ταλαντούχους και φιλόδοξους ανθρώπους που μοιράζονται τη δέσμευσή μας προς τους πελάτες. Δείτε τις ανοιχτές θέσεις ή στείλτε μας μια γενική αίτηση.',
-  careers_intro_ru: 'Мы всегда рады талантливым и целеустремлённым людям, которые разделяют нашу преданность клиентам. Ознакомьтесь с открытыми вакансиями или отправьте общую заявку.',
   careers_intro_he: 'אנו תמיד שמחים להכיר אנשים מוכשרים ובעלי מוטיבציה שחולקים את המחויבות שלנו ללקוחות. עיינו במשרות הפתוחות או שלחו לנו מועמדות כללית.'
 };
 
-export const LANGS = ['en', 'el', 'ru', 'he'];
+export const LANGS = ['en', 'el'];
 
 export async function initDb() {
   pool = await createPool();
@@ -243,6 +238,25 @@ export async function initDb() {
         })()
       );
     }
+  }
+
+  // Expertise areas added to the starter content after a database was created are added once.
+  // An area the firm later deletes in the admin console is not added back.
+  for (const slug of ['succession-law']) {
+    const flag = `area_added_${slug}`;
+    if (await one('SELECT value FROM settings WHERE key = $1', [flag])) continue;
+    const a = seedPracticeAreas.find((x) => x.slug === slug);
+    const exists = await one('SELECT id FROM practice_areas WHERE slug = $1', [slug]);
+    if (a && !exists) {
+      const pos = seedPracticeAreas.indexOf(a);
+      await query('UPDATE practice_areas SET sort_order = sort_order + 1 WHERE sort_order >= $1', [pos]);
+      const img = a.image ? seedImage(a.image) : null;
+      await query(
+        'INSERT INTO practice_areas (slug, name, summary, body, sort_order, i18n, image, image_type, image_version) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+        [a.slug, a.name, a.summary, a.body, pos, JSON.stringify(a.i18n || {}), img, img ? 'image/jpeg' : null, img ? 1 : 0]
+      );
+    }
+    await query('INSERT INTO settings (key, value) VALUES ($1, $2)', [flag, '1']);
   }
 
   // Refresh expertise images that still use a starter image (never replaced in the admin console),

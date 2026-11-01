@@ -45,8 +45,8 @@ function Marquee({ words, reverse = false }) {
 
 export default function LinkPage() {
   const { settings } = useSite();
-  const { t } = useI18n();
-  const address = `${settings.address_line1}, ${settings.address_line2}`;
+  const { t, ts } = useI18n();
+  const address = `${ts(settings, 'address_line1')}, ${ts(settings, 'address_line2')}`;
 
   useEffect(() => {
     document.title = 'H.A. Andreou & Co';
@@ -91,7 +91,7 @@ export default function LinkPage() {
               </a>
             ))}
           </nav>
-          <p className="mt-10 text-[12px] uppercase lg:mt-6 tracking-[0.3em] text-white/40">{settings.address_line1.split(',')[0]}, {settings.address_line2}</p>
+          <p className="mt-10 text-[12px] uppercase lg:mt-6 tracking-[0.3em] text-white/40">{ts(settings, 'address_line1').split(',')[0]}, {ts(settings, 'address_line2')}</p>
           <ErgonCredit className="mt-6 lg:mt-4" />
         </div>
       </main>

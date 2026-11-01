@@ -6,7 +6,7 @@ import { useI18n } from '../i18n/index.jsx';
 export default function Contact() {
   const { settings } = useSite();
   const { t, ts, lang } = useI18n();
-  const address = `${settings.address_line1}, ${settings.address_line2}`;
+  const address = `${ts(settings, 'address_line1')}, ${ts(settings, 'address_line2')}`;
   const pin = settings.map_location || address;
 
   return (

@@ -169,8 +169,8 @@ export default function Home() {
           <div>
             <p className="eyebrow eyebrow-line">{t('home.contactEyebrow')}</p>
             <h2 className="h-display mt-6 text-4xl sm:text-5xl">{t('home.contactTitle')}</h2>
-            <p className="mt-6 max-w-md leading-relaxed text-ink/60">{t('home.contactText')}</p>
-            <Link to="/contact" className="btn-gold mt-10">{t('common.contactUs')}</Link>
+            <p className="mt-6 text-lg leading-relaxed text-ink/60">{t('home.contactText')}</p>
+            <div className="mt-10 flex justify-center"><Link to="/contact" className="btn-gold">{t('common.contactUs')}</Link></div>
           </div>
         </Reveal>
       </section>

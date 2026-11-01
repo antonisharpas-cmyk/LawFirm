@@ -28,28 +28,12 @@ const GROUPS = [
   [
     'Greek',
     [
+      ['address_line1_el', 'Address line 1'],
+      ['address_line2_el', 'Address line 2'],
       ['hours_el', 'Office hours'],
       ['careers_intro_el', 'Careers introduction', true],
       ['chat_welcome_el', 'Chat greeting, during office hours', true],
       ['chat_offline_el', 'Chat greeting, outside office hours', true]
-    ]
-  ],
-  [
-    'Russian',
-    [
-      ['hours_ru', 'Office hours'],
-      ['careers_intro_ru', 'Careers introduction', true],
-      ['chat_welcome_ru', 'Chat greeting, during office hours', true],
-      ['chat_offline_ru', 'Chat greeting, outside office hours', true]
-    ]
-  ],
-  [
-    'Hebrew',
-    [
-      ['hours_he', 'Office hours'],
-      ['careers_intro_he', 'Careers introduction', true],
-      ['chat_welcome_he', 'Chat greeting, during office hours', true],
-      ['chat_offline_he', 'Chat greeting, outside office hours', true]
     ]
   ],
   [
@@ -219,9 +203,9 @@ export default function SettingsAdmin() {
                 <div key={key} className={long ? 'sm:col-span-2' : ''}>
                   <label className="a-label">{label}</label>
                   {long ? (
-                    <textarea className="a-input min-h-[80px]" dir={key.endsWith('_he') ? 'rtl' : 'ltr'} value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
+                    <textarea className="a-input min-h-[80px]" value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
                   ) : (
-                    <input className="a-input" dir={key.endsWith('_he') ? 'rtl' : 'ltr'} value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
+                    <input className="a-input" value={s[key] || ''} onChange={(e) => setS({ ...s, [key]: e.target.value })} />
                   )}
                 </div>
               ))}

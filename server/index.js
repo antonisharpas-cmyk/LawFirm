@@ -37,7 +37,7 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 const officeOpenNow = async () => isOfficeOpen(await getSettings());
 const pickLang = (l) => (LANGS.includes(l) ? l : 'en');
 const fmtDate = () => new Date().toLocaleString('en-GB', { timeZone: 'Europe/Nicosia', dateStyle: 'medium', timeStyle: 'short' });
-const LANG_NAMES = { en: 'English', el: 'Greek', ru: 'Russian', he: 'Hebrew' };
+const LANG_NAMES = { en: 'English', el: 'Greek' };
 
 // live chat email bookkeeping (in memory, resets on restart)
 const visitorSeen = new Map(); // chat token -> last time the visitor's browser checked for messages
@@ -48,7 +48,7 @@ const OFFICE_CHAT_MAIL_GAP_MS = 15 * 60 * 1000;
 
 const LAWYER_FIELDS = ['name', 'title', 'email', 'phone', 'languages', 'education', 'admissions', 'practice_areas', 'summary', 'bio', 'linkedin'];
 
-// translations are stored as JSON text: { el: { field: value }, ru: {...}, he: {...} }
+// translations are stored as JSON text: { el: { field: value } }
 function parseI18n(row) {
   if (!row) return row;
   let i18n = {};

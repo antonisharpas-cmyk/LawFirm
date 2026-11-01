@@ -32,7 +32,7 @@ Production build: `npm install && npm run build`, then `npm start` (serves the A
 
 ## Languages
 
-English, Greek, Russian and Hebrew (right to left). Website text lives in `client/src/i18n/*.js`.
+English and Greek. Website text lives in `client/src/i18n/*.js`.
 Lawyers, expertise areas and job positions have a Translations box in the admin editor; empty translations fall back to English.
 Office hours, chat greetings and the careers introduction are translated in admin Settings.
 

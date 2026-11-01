@@ -5,8 +5,8 @@ import { useI18n } from '../i18n/index.jsx';
 
 function LegalPage({ doc }) {
   const { settings } = useSite();
-  const { t } = useI18n();
-  const vars = { firm: settings.legal_name ? `${settings.legal_name} (${settings.firm_name})` : settings.firm_name, address: `${settings.address_line1}, ${settings.address_line2}`, email: settings.email, phone: settings.phone };
+  const { t, ts } = useI18n();
+  const vars = { firm: settings.legal_name ? `${settings.legal_name} (${settings.firm_name})` : settings.firm_name, address: `${ts(settings, 'address_line1')}, ${ts(settings, 'address_line2')}`, email: settings.email, phone: settings.phone };
   const fill = (s) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
   const d = t(`legal.${doc}`);
   return (

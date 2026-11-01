@@ -7,9 +7,9 @@ const FALLBACK = {
   email: 'info@ahllc.com.cy',
   phone: '+357 24 656765',
   fax: '+357 24 824424',
-  address_line1: '4 United Nations Street, Anastasia Building, 2nd & 3rd Floor',
-  address_line2: '6042 Larnaca, Cyprus',
-  map_location: 'Inomenon Ethnon 4, Larnaca 6042, Cyprus',
+  address_line1: '23-25 Piliou Street, Giorgos Mattheou Building, Office 501',
+  address_line2: '6037 Larnaca, Cyprus',
+  map_location: '34.9156651,33.6030268',
   hours: 'Monday to Friday, 9:00 to 17:00'
 };
 

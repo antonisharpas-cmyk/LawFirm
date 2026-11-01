@@ -65,9 +65,9 @@ export default function Footer() {
           <h4 className="eyebrow mb-5">{t('footer.office')}</h4>
           <address className="space-y-3 text-sm not-italic leading-relaxed">
             <p>
-              {settings.address_line1}
+              {ts(settings, 'address_line1')}
               <br />
-              {settings.address_line2}
+              {ts(settings, 'address_line2')}
             </p>
             <p>
               <a href={telHref(settings.phone)} className="hover:text-gold"><span dir="ltr">{settings.phone}</span></a>

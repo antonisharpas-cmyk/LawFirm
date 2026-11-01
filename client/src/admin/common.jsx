@@ -105,11 +105,9 @@ export function Empty({ title, text }) {
 }
 
 // Translations editor used for lawyers, expertise areas and job positions.
-// English stays in the main form; Greek, Russian and Hebrew are optional and fall back to English on the website.
+// English stays in the main form; Greek is optional and falls back to English on the website.
 const T_LANGS = [
   ['el', 'Greek'],
-  ['ru', 'Russian'],
-  ['he', 'Hebrew']
 ];
 
 export function TranslationFields({ value = {}, onChange, fields, source = {} }) {
@@ -135,7 +133,7 @@ export function TranslationFields({ value = {}, onChange, fields, source = {} })
           ))}
         </div>
       </div>
-      <div className="space-y-3" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+      <div className="space-y-3">
         {fields.map(([key, label, long]) => (
           <div key={key}>
             <label className="a-label">{label}</label>
