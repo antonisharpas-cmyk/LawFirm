@@ -2,6 +2,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, resizeImage } from '../lib/api.js';
 import { Empty, Icon, Modal, PageTitle, Pill, Toast, TranslationFields } from './common.jsx';
 
+const HOME_MAX = 6;
+
+function StarIcon({ filled }) {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />
+    </svg>
+  );
+}
+
 export default function PracticeAreasAdmin() {
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null);
@@ -44,7 +54,7 @@ export default function PracticeAreasAdmin() {
     e.preventDefault();
     setError('');
     try {
-      const body = { name: editing.name, summary: editing.summary, body: editing.body, published: editing.published !== false, i18n: editing.i18n || {} };
+      const body = { name: editing.name, summary: editing.summary, body: editing.body, published: editing.published !== false, featured: Boolean(editing.featured), i18n: editing.i18n || {} };
       let row = editing.id
         ? await api(`/api/admin/practice-areas/${editing.id}`, { method: 'PUT', admin: true, body })
         : await api('/api/admin/practice-areas', { method: 'POST', admin: true, body });
@@ -55,6 +65,21 @@ export default function PracticeAreasAdmin() {
       setToast('Expertise area saved');
     } catch (err) {
       setError(err.message);
+    }
+  }
+
+  const featuredCount = items.filter((x) => x.featured).length;
+
+  async function toggleHome(a) {
+    if (!a.featured && featuredCount >= HOME_MAX) {
+      setToast(`The homepage shows ${HOME_MAX} areas. Remove one first.`);
+      return;
+    }
+    try {
+      const row = await api(`/api/admin/practice-areas/${a.id}`, { method: 'PUT', admin: true, body: { featured: !a.featured } });
+      setItems((l) => l.map((x) => (x.id === row.id ? row : x)));
+    } catch (err) {
+      setToast(err.message);
     }
   }
 
@@ -76,7 +101,7 @@ export default function PracticeAreasAdmin() {
 
   return (
     <>
-      <PageTitle title="Expertise" subtitle="The areas of law listed on the Expertise page and in the forms.">
+      <PageTitle title="Expertise" subtitle={`The areas of law listed on the Expertise page and in the forms. Use the star to choose the ${HOME_MAX} areas shown on the homepage (${featuredCount} of ${HOME_MAX} chosen).`}>
         <button className="a-btn-gold" onClick={() => edit({ name: '', summary: '', body: '', published: true, i18n: {} })}><Icon name="plus" /> Add area</button>
       </PageTitle>
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -97,6 +122,13 @@ export default function PracticeAreasAdmin() {
                   <p className="flex items-center gap-2 font-medium">{a.name} {!a.published && <Pill>Hidden</Pill>}</p>
                   <p className="truncate text-sm text-ink/50">{a.summary}</p>
                 </div>
+                <button
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition ${a.featured ? 'border-gold bg-gold/15 text-gold-dark' : 'border-ink/10 text-ink/40 hover:border-gold hover:text-gold-dark'}`}
+                  onClick={() => toggleHome(a)}
+                  title={a.featured ? 'Shown on the homepage. Click to remove.' : 'Click to show on the homepage'}
+                >
+                  <StarIcon filled={a.featured} /> <span className="hidden sm:inline">Homepage</span>
+                </button>
                 <button className="rounded-lg p-2 text-red-500 hover:bg-red-50" onClick={() => remove(a)} aria-label="Delete"><Icon name="trash" /></button>
                 <button className="a-btn-ghost !py-2" onClick={() => edit(a)}><Icon name="edit" /> Edit</button>
               </li>
@@ -127,6 +159,7 @@ export default function PracticeAreasAdmin() {
             <div><label className="a-label">Description</label><textarea className="a-input min-h-[140px]" value={editing.body} onChange={(e) => setEditing({ ...editing, body: e.target.value })} /><p className="mt-1 text-xs text-ink/40">Start a line with • to show it as a bullet point</p></div>
             <TranslationFields value={editing.i18n || {}} onChange={(i18n) => setEditing({ ...editing, i18n })} source={editing} fields={[['name', 'Name'], ['summary', 'Short summary', true], ['body', 'Description', true]]} />
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#B08B4F]" checked={editing.published !== false} onChange={(e) => setEditing({ ...editing, published: e.target.checked })} /> Show on website</label>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 accent-[#B08B4F]" checked={Boolean(editing.featured)} onChange={(e) => setEditing({ ...editing, featured: e.target.checked })} /> Show on the homepage (up to {HOME_MAX} areas)</label>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-2"><button type="button" className="a-btn-ghost" onClick={() => setEditing(null)}>Cancel</button><button className="a-btn-primary">Save</button></div>
           </form>

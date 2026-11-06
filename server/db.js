@@ -74,6 +74,7 @@ const SCHEMA = [
     body TEXT NOT NULL DEFAULT '',
     sort_order INTEGER NOT NULL DEFAULT 0,
     published BOOLEAN NOT NULL DEFAULT TRUE,
+    featured BOOLEAN NOT NULL DEFAULT FALSE,
     i18n TEXT NOT NULL DEFAULT '{}',
     image TEXT,
     image_type TEXT,
@@ -197,6 +198,7 @@ export const DEFAULT_SETTINGS = {
 };
 
 export const LANGS = ['en', 'el'];
+export const HOME_AREAS_MAX = 6;
 
 export async function initDb() {
   pool = await createPool();
@@ -208,6 +210,7 @@ export async function initDb() {
     }
     await pool.query("ALTER TABLE chat_sessions ADD COLUMN IF NOT EXISTS lang TEXT NOT NULL DEFAULT 'en'");
     await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS image TEXT');
+    await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS featured BOOLEAN NOT NULL DEFAULT FALSE');
     await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS image_type TEXT');
     await pool.query('ALTER TABLE practice_areas ADD COLUMN IF NOT EXISTS image_version INTEGER NOT NULL DEFAULT 0');
   }
@@ -257,6 +260,17 @@ export async function initDb() {
       );
     }
     await query('INSERT INTO settings (key, value) VALUES ($1, $2)', [flag, '1']);
+  }
+
+  // The homepage shows up to HOME_AREAS_MAX expertise areas chosen in the admin console.
+  // The first time, the first six areas in the list are selected.
+  if (!(await one("SELECT value FROM settings WHERE key = 'home_areas_initialised'"))) {
+    const [{ count: featuredCount }] = await query('SELECT COUNT(*)::int AS count FROM practice_areas WHERE featured = TRUE');
+    if (Number(featuredCount) === 0) {
+      const first = await query('SELECT id FROM practice_areas ORDER BY sort_order, id LIMIT $1', [HOME_AREAS_MAX]);
+      for (const r of first) await query('UPDATE practice_areas SET featured = TRUE WHERE id = $1', [r.id]);
+    }
+    await query("INSERT INTO settings (key, value) VALUES ('home_areas_initialised', '1')");
   }
 
   // Refresh expertise images that still use a starter image (never replaced in the admin console),

@@ -32,6 +32,9 @@ function HeroVideo() {
 
 export default function Home() {
   const { areas, lawyers } = useSite();
+  // up to 6 areas chosen in the admin console (Expertise, "Homepage"); the first 6 if none are chosen
+  const chosen = areas.filter((a) => a.featured);
+  const homeAreas = (chosen.length ? chosen : areas).slice(0, 6);
   const { t, tr } = useI18n();
 
   return (
@@ -108,7 +111,7 @@ export default function Home() {
               <Link to="/expertise" className="link-arrow mt-8 !text-gold">{t('home.expLink')} <Arrow /></Link>
             </Reveal>
             <div className="grid sm:grid-cols-2 lg:col-span-7">
-              {areas.map((a, i) => (
+              {homeAreas.map((a, i) => (
                 <Reveal key={a.id} delay={(i % 2) * 80}>
                   <Link to={`/expertise#${a.slug}`} className="group flex items-baseline gap-5 border-b border-white/10 py-5 pe-4 transition hover:border-gold/50">
                     <span className="text-[11px] tabular-nums text-gold/70">{String(i + 1).padStart(2, '0')}</span>

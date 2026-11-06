@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
-import { initDb, query, one, getSettings, usingMemoryDb, DEFAULT_SETTINGS, LANGS } from './db.js';
+import { initDb, query, one, getSettings, usingMemoryDb, DEFAULT_SETTINGS, LANGS, HOME_AREAS_MAX } from './db.js';
 import { signToken, checkCredentials, requireAdmin, rateLimit } from './auth.js';
 import { notifyOffice, sendInquiryReceipt, sendApplicationReceipt, sendChatReplyToVisitor, sendTestEmail, mailConfigured, officeEmail } from './mail.js';
 import { isOfficeOpen } from './hours.js';
@@ -589,14 +589,22 @@ admin.put('/practice-areas/:id', wrap(async (req, res) => {
   const b = req.body || {};
   const name = clean(b.name, 200) || cur.name;
   const slug = name !== cur.name ? await uniqueSlug('practice_areas', name, id) : cur.slug;
+  const featured = b.featured !== undefined ? Boolean(b.featured) : cur.featured;
+  if (featured && !cur.featured) {
+    const [{ count }] = await query('SELECT COUNT(*)::int AS count FROM practice_areas WHERE featured = TRUE AND id <> $1', [id]);
+    if (Number(count) >= HOME_AREAS_MAX) {
+      return res.status(400).json({ error: `The homepage shows ${HOME_AREAS_MAX} areas. Remove one from the homepage first.` });
+    }
+  }
   const row = await one(
-    'UPDATE practice_areas SET slug=$1, name=$2, summary=$3, body=$4, published=$5 WHERE id=$6 RETURNING *',
+    'UPDATE practice_areas SET slug=$1, name=$2, summary=$3, body=$4, published=$5, featured=$6 WHERE id=$7 RETURNING *',
     [
       slug,
       name,
       b.summary !== undefined ? clean(b.summary, 1000) : cur.summary,
       b.body !== undefined ? clean(b.body, 10000) : cur.body,
       b.published !== undefined ? Boolean(b.published) : cur.published,
+      featured,
       id
     ]
   );

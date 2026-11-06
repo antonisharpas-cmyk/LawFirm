@@ -4,14 +4,13 @@ import { api } from '../lib/api.js';
 import { telHref, useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 import { Avatar, Arrow, Reveal } from '../components/ui.jsx';
-import LawyerCard from '../components/LawyerCard.jsx';
 
 const lines = (s = '') => s.split('\n').map((x) => x.trim()).filter(Boolean);
 const list = (s = '') => s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 
 export default function LawyerProfile() {
   const { slug } = useParams();
-  const { lawyers, areas } = useSite();
+  const { areas } = useSite();
   const { t, tr } = useI18n();
   const [lawyer, setLawyer] = useState(null);
   const [missing, setMissing] = useState(false);
@@ -42,7 +41,6 @@ export default function LawyerProfile() {
     const a = areas.find((x) => x.name.toLowerCase() === name.toLowerCase());
     return a ? tr(a, 'name') : name;
   };
-  const others = lawyers.filter((l) => l.id !== lawyer.id).slice(0, 3);
   const details = [
     [t('profile.expertise'), list(lawyer.practice_areas).map(areaName)],
     [t('profile.education'), lines(tr(lawyer, 'education'))],
@@ -128,16 +126,6 @@ export default function LawyerProfile() {
         </div>
       </section>
 
-      {others.length > 0 && (
-        <section className="bg-paper py-20">
-          <div className="container-x">
-            <h2 className="h-display text-3xl">{t('profile.others')}</h2>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {others.map((l) => <LawyerCard key={l.id} lawyer={l} />)}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 }
