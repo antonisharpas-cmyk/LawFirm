@@ -4,7 +4,7 @@ import { api } from './api.js';
 const FALLBACK = {
   firm_name: 'H.A. Andreou & Co',
   legal_name: 'Helena Antonis Andreou LLC',
-  email: 'info@ahllc.com.cy',
+  email: 'info@ailawyerscy.com',
   phone: '+357 24 656765',
   fax: '+357 24 824424',
   address_line1: '23-25 Piliou Street, Giorgos Mattheou Building, Office 501',

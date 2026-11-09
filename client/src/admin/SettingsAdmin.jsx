@@ -213,6 +213,9 @@ export default function SettingsAdmin() {
           </section>
         ))}
       </div>
+      <div className="sticky bottom-4 z-20 mt-6 flex justify-end">
+        <button className="a-btn-primary shadow-lg" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
+      </div>
       <Toast message={toast} onDone={() => setToast('')} />
     </form>
   );
