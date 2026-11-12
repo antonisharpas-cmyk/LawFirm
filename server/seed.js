@@ -22,24 +22,24 @@ const people = [
   ['helena-andreou', 'Helena Andreou', T.managingPartnerF, 'h.andreou@ahllc.com.cy', '+357 24 828393', LANG.ge,
     'LL.M., International and Commercial Law, University of Sheffield, 1993\nLL.B. (Hons.), University of Leicester, 1992',
     'Member of the Cyprus Bar, 1995', true],
-  ['giorgos-neofytidis', 'Giorgos Neofytidis', T.partnerM, '', '+357 24 656765', LANG.ge, '', '', true],
-  ['kyriakos-georgiou', 'Kyriakos Georgiou', T.assocM, 'k.georgiou@ahllc.com.cy', '+357 24 656765', LANG.ge,
+  ['giorgos-neofytidis', 'Giorgos Neofytidis', T.partnerM, '', '+357 24 828373', LANG.ge, '', '', true],
+  ['kyriakos-georgiou', 'Kyriakos Georgiou', T.assocM, 'k.georgiou@ahllc.com.cy', '+357 24 828373', LANG.ge,
     'Law Degree, Democritus University of Thrace, 2021',
     'Member of the Cyprus Bar, 2022', true],
-  ['anastasis-mytidis', 'Anastasis Mytidis', T.assocM, 'am@ahllc.com.cy', '+357 24 656765', LANG.ge,
+  ['anastasis-mytidis', 'Anastasis Mytidis', T.assocM, 'am@ahllc.com.cy', '+357 24 828373', LANG.ge,
     'LL.B., National and Kapodistrian University of Athens, 2022',
     'Member of the Cyprus Bar Association, 2023', true],
-  ['maria-hadjisavva', 'Maria Hadjisavva', T.assocF, 'm.hadjisavva@ahllc.com.cy', '+357 24 656765', LANG.ge,
+  ['maria-hadjisavva', 'Maria Hadjisavva', T.assocF, 'm.hadjisavva@ahllc.com.cy', '+357 24 828373', LANG.ge,
     'LL.B. (Hons), University of Central Lancashire Cyprus (UCLan), 2020',
     'Member of the Cyprus Bar, 2022', true],
-  ['antonis-neofytou', 'Antonis Neofytou', T.traineeM, '', '+357 24 656765', LANG.ge, '', '', true],
+  ['antonis-neofytou', 'Antonis Neofytou', T.traineeM, '', '+357 24 828373', LANG.ge, '', '', true],
   // hidden, roles to be confirmed
-  ['alexia-ioannou', 'Alexia Ioannou', T.none, '', '+357 24 656765', LANG.ge,
+  ['alexia-ioannou', 'Alexia Ioannou', T.none, '', '+357 24 828373', LANG.ge,
     'LL.B. (Hons), Newcastle University, 2022\nLL.M. International Commercial Law, Newcastle University, 2023', '', false],
-  ['kyriaki-vasileiadou', 'Kyriaki Vasileiadou', T.none, '', '+357 24 656765', LANG.ge,
+  ['kyriaki-vasileiadou', 'Kyriaki Vasileiadou', T.none, '', '+357 24 828373', LANG.ge,
     'LL.B. (Hons), SOAS University of London, 2015\nLPC MSc Law, Business and Management, University of Law, Bloomsbury, 2017', '', false],
   ['maria-charalambous', 'Maria Charalambous', T.none, 'm.charalambous@ahllc.com.cy', '+357 24 828393', LANG.ge, '', '', false],
-  ['anna-andreou', 'Anna Andreou', T.none, 'anna.andreou@ahllc.com.cy', '+357 24 656765', LANG.ge, '', '', false]
+  ['anna-andreou', 'Anna Andreou', T.none, 'anna.andreou@ahllc.com.cy', '+357 24 828373', LANG.ge, '', '', false]
 ];
 
 export const seedLawyers = people.map(([slug, name, t, email, phone, langs, education, admissions, published]) => ({
