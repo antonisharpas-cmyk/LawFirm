@@ -166,7 +166,7 @@ export default function AdminApp() {
       <main className="lg:pl-64">
         {me?.memoryDb && (
           <div className="bg-amber-100 px-6 py-2 text-center text-xs text-amber-900">
-            Demo mode: no DATABASE_URL is set, so changes are kept in memory and will reset when the server restarts.
+            Demo mode: no database is connected (SQLITE_PATH or DATABASE_URL), so changes are kept in memory and will reset when the server restarts.
           </div>
         )}
         <div className="mx-auto max-w-[1400px] p-4 sm:p-6 lg:p-8">

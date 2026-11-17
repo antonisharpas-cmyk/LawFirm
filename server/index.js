@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
-import { initDb, query, one, getSettings, usingMemoryDb, DEFAULT_SETTINGS, LANGS, HOME_AREAS_MAX } from './db.js';
+import { initDb, query, one, getSettings, usingMemoryDb, dbKind, DEFAULT_SETTINGS, LANGS, HOME_AREAS_MAX } from './db.js';
 import { signToken, checkCredentials, requireAdmin, rateLimit, adminLoginBlocked } from './auth.js';
 import { notifyOffice, sendInquiryReceipt, sendApplicationReceipt, sendChatReplyToVisitor, sendTestEmail, mailConfigured, officeEmail } from './mail.js';
 import { isOfficeOpen } from './hours.js';
@@ -935,7 +935,8 @@ initDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`H.A. Andreou & Co server running on http://localhost:${PORT}`);
-      if (usingMemoryDb) console.log('No DATABASE_URL set: using an in memory database (data resets on restart).');
+      if (dbKind === 'sqlite') console.log(`Using the SQLite database file ${process.env.SQLITE_PATH}`);
+      if (usingMemoryDb) console.log('No SQLITE_PATH or DATABASE_URL set: using an in memory database (data resets on restart).');
       if (!process.env.ADMIN_PASSWORD) console.log(adminLoginBlocked() ? 'Admin console locked: set a strong ADMIN_PASSWORD (at least 10 characters).' : 'ADMIN_PASSWORD not set: default admin login is admin / change-me (local testing only)');
     });
   })

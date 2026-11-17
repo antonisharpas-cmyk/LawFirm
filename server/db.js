@@ -1,7 +1,8 @@
-// Database layer.
-// Uses PostgreSQL when DATABASE_URL is set (production on Render).
-// Without DATABASE_URL it runs an in memory Postgres (pg-mem) so the
-// project works locally straight away. In memory data resets on restart.
+// Database layer. Three options, chosen by environment variables:
+//   SQLITE_PATH   a SQLite database file, for example on a Render disk (/var/data/andreou.db)
+//   DATABASE_URL  a PostgreSQL database
+//   neither       an in memory database (pg-mem), handy for local testing; data resets on restart
+// The queries are written for PostgreSQL; for SQLite they are translated below.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,9 +20,60 @@ function seedImage(rel) {
 
 let pool;
 export let usingMemoryDb = false;
+export let dbKind = 'memory';
+
+// Columns stored as 0/1 in SQLite that the app expects as true/false.
+const BOOLEAN_COLUMNS = new Set(['published', 'featured']);
+
+// Translates the PostgreSQL flavoured SQL used by the app to SQLite.
+function toSqlite(text) {
+  return text
+    .replace(/\bSERIAL PRIMARY KEY\b/g, 'INTEGER PRIMARY KEY AUTOINCREMENT')
+    .replace(/\bTIMESTAMPTZ\b/g, 'TEXT')
+    .replace(/DEFAULT NOW\(\)/g, "DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))")
+    .replace(/\bNOW\(\)/g, "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')")
+    .replace(/::int\b/g, '')
+    .replace(/\$(\d+)/g, '?$1');
+}
+
+async function createSqlite(file) {
+  const { default: Database } = await import('better-sqlite3');
+  fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  const db = new Database(file);
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+  const cache = new Map();
+  return {
+    async query(text, params = []) {
+      let stmt = cache.get(text);
+      if (!stmt) {
+        stmt = db.prepare(toSqlite(text));
+        cache.set(text, stmt);
+      }
+      // numbered placeholders (?1, ?2 ...) are bound by number
+      const args = {};
+      params.forEach((v, i) => {
+        args[i + 1] = v === true ? 1 : v === false ? 0 : v === undefined ? null : v;
+      });
+      const bind = params.length ? [args] : [];
+      if (!stmt.reader) {
+        stmt.run(...bind);
+        return { rows: [] };
+      }
+      const rows = stmt.all(...bind);
+      for (const r of rows) for (const k of BOOLEAN_COLUMNS) if (k in r && r[k] !== null) r[k] = Boolean(r[k]);
+      return { rows };
+    }
+  };
+}
 
 async function createPool() {
+  if (process.env.SQLITE_PATH) {
+    dbKind = 'sqlite';
+    return createSqlite(process.env.SQLITE_PATH);
+  }
   if (process.env.DATABASE_URL) {
+    dbKind = 'postgres';
     const ssl = process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false };
     return new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl, max: 10 });
   }
@@ -214,8 +266,8 @@ export const HOME_AREAS_MAX = 6;
 export async function initDb() {
   pool = await createPool();
   for (const stmt of SCHEMA) await pool.query(stmt);
-  if (!usingMemoryDb) {
-    await pool.query('CREATE INDEX IF NOT EXISTS chat_messages_session_idx ON chat_messages (session_id, id)');
+  if (dbKind !== 'memory') await pool.query('CREATE INDEX IF NOT EXISTS chat_messages_session_idx ON chat_messages (session_id, id)');
+  if (dbKind === 'postgres') {
     for (const t of ['lawyers', 'practice_areas', 'jobs']) {
       await pool.query(`ALTER TABLE ${t} ADD COLUMN IF NOT EXISTS i18n TEXT NOT NULL DEFAULT '{}'`);
     }

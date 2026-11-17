@@ -5,16 +5,17 @@ import { Reveal, Arrow, StarMark } from '../components/ui.jsx';
 import { useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
-// Homepage hero background: 'plain' (navy), 'video' (Larnaca aerial) or 'network' (animated constellation).
-const HERO_BACKGROUND = 'plain';
+// Homepage hero background: 'video' (the sea, see HERO_VIDEO), 'plain' (navy) or 'network' (animated constellation).
+const HERO_VIDEO = 'hero-sea'; // files in client/public/video: hero-sea (the sea off Larnaca) or hero-larnaca (aerial of the town)
+const HERO_BACKGROUND = 'video';
 
 function HeroVideo() {
   return (
     <>
       <video
         className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
-        src="/video/hero-larnaca.mp4"
-        poster="/video/hero-larnaca.jpg"
+        src={`/video/${HERO_VIDEO}.mp4`}
+        poster={`/video/${HERO_VIDEO}.jpg`}
         autoPlay
         muted
         loop
@@ -22,7 +23,7 @@ function HeroVideo() {
         preload="auto"
         aria-hidden="true"
       />
-      <img src="/video/hero-larnaca.jpg" alt="" aria-hidden="true" className="absolute inset-0 hidden h-full w-full object-cover motion-reduce:block" />
+      <img src={`/video/${HERO_VIDEO}.jpg`} alt="" aria-hidden="true" className="absolute inset-0 hidden h-full w-full object-cover motion-reduce:block" />
       <div className="absolute inset-0 bg-ink/70" />
       <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-transparent to-ink/80" />
     </>
