@@ -115,9 +115,6 @@ export default function PracticeAreasAdmin() {
                   <button className="text-ink/40 hover:text-ink disabled:opacity-20" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Move up"><Icon name="up" className="h-3.5 w-3.5" /></button>
                   <button className="text-ink/40 hover:text-ink disabled:opacity-20" onClick={() => move(i, 1)} disabled={i === items.length - 1} aria-label="Move down"><Icon name="down" className="h-3.5 w-3.5" /></button>
                 </div>
-                <div className="hidden h-12 w-20 shrink-0 overflow-hidden rounded-md bg-ink/5 sm:block">
-                  {a.image_url && <img src={a.image_url} alt="" className="h-full w-full object-cover" />}
-                </div>
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-2 font-medium">{a.name} {!a.published && <Pill>Hidden</Pill>}</p>
                   <p className="truncate text-sm text-ink/50">{a.summary}</p>
@@ -140,20 +137,6 @@ export default function PracticeAreasAdmin() {
       <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={editing?.id ? 'Edit area' : 'Add area'} wide>
         {editing && (
           <form onSubmit={save} className="space-y-4">
-            <div>
-              <label className="a-label">Image</label>
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="aspect-[16/7] w-56 overflow-hidden rounded-lg bg-ink/5">
-                  {(pendingImage || editing.image_url) && <img src={pendingImage || editing.image_url} alt="" className="h-full w-full object-cover" />}
-                </div>
-                <div className="flex flex-col gap-2">
-                  <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={pickImage} />
-                  <button type="button" className="a-btn-ghost" onClick={() => fileRef.current?.click()}><Icon name="image" /> {pendingImage || editing.image_url ? 'Change image' : 'Upload image'}</button>
-                  {(pendingImage || editing.image_url) && <button type="button" className="text-xs text-red-600 hover:underline" onClick={removeImage}>Remove image</button>}
-                  <p className="text-xs text-ink/40">Wide photos work best. Shown in black and white.</p>
-                </div>
-              </div>
-            </div>
             <div><label className="a-label">Name *</label><input className="a-input" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
             <div><label className="a-label">Short summary</label><textarea className="a-input min-h-[70px]" value={editing.summary} onChange={(e) => setEditing({ ...editing, summary: e.target.value })} /></div>
             <div><label className="a-label">Description</label><textarea className="a-input min-h-[140px]" value={editing.body} onChange={(e) => setEditing({ ...editing, body: e.target.value })} /><p className="mt-1 text-xs text-ink/40">Start a line with • to show it as a bullet point</p></div>

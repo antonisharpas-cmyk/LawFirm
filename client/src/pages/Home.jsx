@@ -5,9 +5,8 @@ import { Reveal, Arrow, StarMark } from '../components/ui.jsx';
 import { useSite } from '../lib/site.jsx';
 import { useI18n } from '../i18n/index.jsx';
 
-// Homepage hero background: 'video' (Larnaca aerial) or 'network' (animated constellation).
-// Switch back to 'network' to restore the previous look.
-const HERO_BACKGROUND = 'video';
+// Homepage hero background: 'plain' (navy), 'video' (Larnaca aerial) or 'network' (animated constellation).
+const HERO_BACKGROUND = 'plain';
 
 function HeroVideo() {
   return (
@@ -41,7 +40,9 @@ export default function Home() {
     <>
       {/* HERO */}
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-ink text-white">
-        {HERO_BACKGROUND === 'video' ? (
+        {HERO_BACKGROUND === 'plain' ? (
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(176,139,79,0.12),transparent_60%)]" />
+        ) : HERO_BACKGROUND === 'video' ? (
           <HeroVideo />
         ) : (
           <>
@@ -80,16 +81,6 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <div className="mt-20 grid border-y border-ink/10 sm:grid-cols-2 lg:grid-cols-4">
-            {t('home.values').map(([title, d], i) => (
-              <Reveal key={title} delay={i * 100} className={`px-2 py-10 sm:px-8 ${i > 0 ? 'lg:border-s lg:border-ink/10' : ''} ${i % 2 ? 'sm:border-s sm:border-ink/10' : ''}`}>
-                <p className="font-heading text-3xl text-gold">0{i + 1}</p>
-                <h3 className="mt-4 text-[13px] font-semibold uppercase tracking-[0.18em]">{title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink/55">{d}</p>
-              </Reveal>
-            ))}
-          </div>
-
           <div className="mt-14 text-center">
             <Link to="/about" className="btn-outline-dark">{t('common.learnMore')}</Link>
           </div>
@@ -113,7 +104,7 @@ export default function Home() {
             <div className="grid sm:grid-cols-2 lg:col-span-7">
               {homeAreas.map((a, i) => (
                 <Reveal key={a.id} delay={(i % 2) * 80}>
-                  <Link to={`/expertise#${a.slug}`} className="group flex items-baseline gap-5 border-b border-white/10 py-5 pe-4 transition hover:border-gold/50">
+                  <Link to={`/expertise/${a.slug}`} className="group flex items-baseline gap-5 border-b border-white/10 py-5 pe-4 transition hover:border-gold/50">
                     <span className="text-[11px] tabular-nums text-gold/70">{String(i + 1).padStart(2, '0')}</span>
                     <span className="font-heading text-lg text-white/85 transition group-hover:translate-x-1 group-hover:text-gold rtl:group-hover:-translate-x-1">{tr(a, 'name')}</span>
                   </Link>

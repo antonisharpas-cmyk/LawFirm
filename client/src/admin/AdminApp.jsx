@@ -6,7 +6,7 @@ import Chats from './Chats.jsx';
 import LawyersAdmin from './LawyersAdmin.jsx';
 import PracticeAreasAdmin from './PracticeAreasAdmin.jsx';
 import SettingsAdmin from './SettingsAdmin.jsx';
-import CareersAdmin from './CareersAdmin.jsx';
+import NewsAdmin from './NewsAdmin.jsx';
 import { Icon } from './common.jsx';
 
 function Login({ onLogin }) {
@@ -64,7 +64,7 @@ const NAV = [
   { to: 'chat', label: 'Live Chat', icon: 'chat', badge: 'unreadChats' },
   { to: 'lawyers', label: 'Lawyers', icon: 'users' },
   { to: 'expertise', label: 'Expertise', icon: 'scale' },
-  { to: 'careers', label: 'Careers', icon: 'briefcase', badge: 'newApplications' },
+  { to: 'news', label: 'News', icon: 'file' },
   { to: 'settings', label: 'Settings', icon: 'cog' }
 ];
 
@@ -176,7 +176,7 @@ export default function AdminApp() {
             <Route path="chat" element={<Chats onChange={refreshStats} />} />
             <Route path="lawyers" element={<LawyersAdmin />} />
             <Route path="expertise" element={<PracticeAreasAdmin />} />
-            <Route path="careers" element={<CareersAdmin onChange={refreshStats} />} />
+            <Route path="news" element={<NewsAdmin />} />
             <Route path="settings" element={<SettingsAdmin />} />
             <Route path="*" element={<Navigate to="inquiries" replace />} />
           </Routes>

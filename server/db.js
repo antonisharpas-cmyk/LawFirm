@@ -131,6 +131,20 @@ const SCHEMA = [
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
+  `CREATE TABLE IF NOT EXISTS news (
+    id SERIAL PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL DEFAULT '',
+    body TEXT NOT NULL DEFAULT '',
+    published_on TEXT NOT NULL DEFAULT '',
+    published BOOLEAN NOT NULL DEFAULT TRUE,
+    i18n TEXT NOT NULL DEFAULT '{}',
+    image TEXT,
+    image_type TEXT,
+    image_version INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`,
   `CREATE TABLE IF NOT EXISTS applications (
     id SERIAL PRIMARY KEY,
     job_id INTEGER,
@@ -156,19 +170,17 @@ const SCHEMA = [
 export const DEFAULT_SETTINGS = {
   firm_name: 'H.A. Andreou & Co',
   legal_name: 'Helena Antonis Andreou LLC',
-  email: 'info@ailawyerscy.com',
-  phone: '+357 24 828373',
+  email: 'info@andreou.law',
+  phone: '+357 24 433070',
   fax: '',
   address_line1: '23-25 Piliou Street, Giorgos Mattheou Building, Office 501',
   address_line2: '6037 Larnaca, Cyprus',
   address_line1_el: 'Πηλίου 23-25, Μέγαρο Γιώργος Ματθαίου, Διαμ./Γραφείο 501',
   address_line2_el: '6037 Λάρνακα, Κύπρος',
   map_location: '34.9156651,33.6030268',
-  hours: 'Monday to Friday, 9:00 to 17:00',
-  // Opening hours used by the live chat (Cyprus time). Days: 1 Monday ... 7 Sunday.
-  office_days: '1,2,3,4,5',
-  office_open: '09:00',
-  office_close: '17:00',
+  hours: 'Monday to Thursday, 8:00 to 18:00\nFriday, 8:00 to 14:30',
+  // Opening hours used by the live chat (Cyprus time), per day. Days: 1 Monday ... 7 Sunday.
+  office_schedule: '{"1":["08:00","18:00"],"2":["08:00","18:00"],"3":["08:00","18:00"],"4":["08:00","18:00"],"5":["08:00","14:30"]}',
   // One date per line: YYYY-MM-DD for a single day, or MM-DD for every year. Text after # is a note.
   office_closed_dates: [
     '01-01 # New Year',
@@ -190,11 +202,10 @@ export const DEFAULT_SETTINGS = {
   instagram: '',
   linkedin: '',
   careers_intro: 'We are always pleased to hear from talented, motivated people who share our commitment to clients. Explore our open positions below or send us a general application.',
-  hours_el: 'Δευτέρα έως Παρασκευή, 9:00 έως 17:00',
+  hours_el: 'Δευτέρα έως Πέμπτη, 8:00 έως 18:00\nΠαρασκευή, 8:00 έως 14:30',
   chat_welcome_el: 'Καλώς ήρθατε στο H.A. Andreou & Co. Πώς μπορούμε να σας βοηθήσουμε; Ένα μέλος της ομάδας μας θα σας απαντήσει εδώ το συντομότερο.',
   chat_offline_el: 'Η ομάδα μας δεν είναι διαθέσιμη αυτή τη στιγμή. Αφήστε το μήνυμα και το email σας και θα επικοινωνήσουμε μαζί σας.',
-  careers_intro_el: 'Χαιρόμαστε πάντα να γνωρίζουμε ταλαντούχους και φιλόδοξους ανθρώπους που μοιράζονται τη δέσμευσή μας προς τους πελάτες. Δείτε τις ανοιχτές θέσεις ή στείλτε μας μια γενική αίτηση.',
-  careers_intro_he: 'אנו תמיד שמחים להכיר אנשים מוכשרים ובעלי מוטיבציה שחולקים את המחויבות שלנו ללקוחות. עיינו במשרות הפתוחות או שלחו לנו מועמדות כללית.'
+  careers_intro_el: 'Χαιρόμαστε πάντα να γνωρίζουμε ταλαντούχους και φιλόδοξους ανθρώπους που μοιράζονται τη δέσμευσή μας προς τους πελάτες. Δείτε τις ανοιχτές θέσεις ή στείλτε μας μια γενική αίτηση.'
 };
 
 export const LANGS = ['en', 'el'];
@@ -245,7 +256,7 @@ export async function initDb() {
 
   // Expertise areas added to the starter content after a database was created are added once.
   // An area the firm later deletes in the admin console is not added back.
-  for (const slug of ['succession-law']) {
+  for (const slug of []) {
     const flag = `area_added_${slug}`;
     if (await one('SELECT value FROM settings WHERE key = $1', [flag])) continue;
     const a = seedPracticeAreas.find((x) => x.slug === slug);
@@ -298,6 +309,64 @@ export async function initDb() {
   for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
     const existing = await one('SELECT key FROM settings WHERE key = $1', [key]);
     if (!existing) await query('INSERT INTO settings (key, value) VALUES ($1, $2)', [key, value]);
+  }
+  await applyContentUpdates();
+}
+
+async function setSetting(key, value) {
+  const existing = await one('SELECT key FROM settings WHERE key = $1', [key]);
+  if (existing) await query('UPDATE settings SET value = $1 WHERE key = $2', [value, key]);
+  else await query('INSERT INTO settings (key, value) VALUES ($1, $2)', [key, value]);
+}
+
+// One time updates requested by the firm, applied once to databases that already exist
+// (a new database gets them from the starter content). Each runs only once.
+const CONTENT_UPDATES = [
+  {
+    id: 'content_update_2026_11_17',
+    settings: ['email', 'phone', 'fax', 'facebook', 'instagram', 'linkedin', 'hours', 'hours_el', 'office_schedule'],
+    lawyers: ['kyriakos-georgiou', 'maria-hadjisavva', 'anastasis-mytidis', 'antonis-neofytou']
+  },
+  // the firm's new list of ten areas of expertise replaces the previous list
+  { id: 'areas_update_2026_11_17', replaceAreas: true },
+  // detailed descriptions for each area (the detail pages), keeping images and homepage choices
+  { id: 'areas_text_2026_11_18', refreshAreaText: true }
+];
+
+async function applyContentUpdates() {
+  for (const u of CONTENT_UPDATES) {
+    if (await one('SELECT value FROM settings WHERE key = $1', [u.id])) continue;
+    if (u.replaceAreas) {
+      await query('DELETE FROM practice_areas');
+      for (const [i, a] of seedPracticeAreas.entries()) {
+        const img = a.image ? seedImage(a.image) : null;
+        await query(
+          'INSERT INTO practice_areas (slug, name, summary, body, sort_order, i18n, image, image_type, image_version, featured) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+          [a.slug, a.name, a.summary, a.body, i, JSON.stringify(a.i18n || {}), img, img ? 'image/jpeg' : null, img ? 1 : 0, i < HOME_AREAS_MAX]
+        );
+      }
+      await query("UPDATE lawyers SET practice_areas = ''");
+    }
+    if (u.refreshAreaText) {
+      for (const a of seedPracticeAreas) {
+        await query('UPDATE practice_areas SET name = $1, summary = $2, body = $3, i18n = $4 WHERE slug = $5', [a.name, a.summary, a.body, JSON.stringify(a.i18n || {}), a.slug]);
+      }
+    }
+    for (const key of u.settings || []) await setSetting(key, DEFAULT_SETTINGS[key]);
+    for (const slug of u.lawyers || []) {
+      const l = seedLawyers.find((x) => x.slug === slug);
+      const row = await one('SELECT id, i18n FROM lawyers WHERE slug = $1', [slug]);
+      if (!l || !row) continue;
+      let tr = {};
+      try {
+        tr = JSON.parse(row.i18n || '{}');
+      } catch {}
+      tr.el = { ...(tr.el || {}), title: l.i18n.el.title };
+      await query('UPDATE lawyers SET title = $1, i18n = $2, sort_order = $3 WHERE id = $4', [l.title, JSON.stringify(tr), seedLawyers.indexOf(l), row.id]);
+    }
+    // the office number replaces the old firm's numbers on lawyer profiles
+    if (u.settings) await query("UPDATE lawyers SET phone = $1 WHERE phone IN ('+357 24 656765', '+357 24 828373', '+357 24 828393', '+357 24 656705', '+357 24 656717')", [DEFAULT_SETTINGS.phone]);
+    await query('INSERT INTO settings (key, value) VALUES ($1, $2)', [u.id, '1']);
   }
 }
 

@@ -8,7 +8,7 @@ const NAV = [
   { to: '/lawyers', key: 'lawyers' },
   { to: '/expertise', key: 'expertise' },
   { to: '/about', key: 'about' },
-  { to: '/careers', key: 'careers' },
+  { to: '/news', key: 'news' },
   { to: '/contact', key: 'contact' }
 ];
 
@@ -48,7 +48,7 @@ export default function Header() {
         <div className="absolute start-0 top-0 h-[2px] bg-gold transition-[width] duration-150" style={{ width: `${progress * 100}%` }} />
         <div className={`container-x flex items-center justify-between gap-4 transition-all duration-500 ${scrolled ? 'h-[72px]' : 'h-[92px]'}`}>
           <Link to="/" className="min-w-0 shrink" aria-label="H.A. Andreou & Co">
-            <img src="/logo.png" alt="H.A. Andreou & Co" className={`w-auto max-w-full object-contain transition-all duration-500 ${scrolled ? 'h-[16px] sm:h-5' : 'h-[18px] sm:h-6'}`} />
+            <img src="/logo.png" alt="H.A. Andreou & Co" className={`w-auto max-w-full object-contain transition-all duration-500 ${scrolled ? 'h-[20px] sm:h-6' : 'h-[22px] sm:h-8'}`} />
           </Link>
 
           <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Main">

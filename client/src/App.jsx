@@ -9,11 +9,11 @@ import LinkPage from './pages/LinkPage.jsx';
 import Home from './pages/Home.jsx';
 import Lawyers from './pages/Lawyers.jsx';
 import LawyerProfile from './pages/LawyerProfile.jsx';
-import PracticeAreas from './pages/PracticeAreas.jsx';
+import PracticeAreas, { PracticeAreaDetail } from './pages/PracticeAreas.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import Privacy, { Terms, Cookies } from './pages/Privacy.jsx';
-import Careers from './pages/Careers.jsx';
+import { NewsList, NewsArticle } from './pages/News.jsx';
 
 const AdminApp = lazy(() => import('./admin/AdminApp.jsx'));
 
@@ -21,7 +21,7 @@ const TITLES = {
   '/': 'H.A. Andreou & Co | Advocates, Legal Consultants, Larnaca',
   '/lawyers': 'Our Lawyers | H.A. Andreou & Co',
   '/expertise': 'Expertise | H.A. Andreou & Co',
-  '/careers': 'Careers | H.A. Andreou & Co',
+  '/news': 'News | H.A. Andreou & Co',
   '/about': 'About | H.A. Andreou & Co',
   '/contact': 'Contact | H.A. Andreou & Co',
   '/privacy': 'Privacy Policy | H.A. Andreou & Co',
@@ -36,6 +36,43 @@ function ScrollManager() {
     if (!hash) window.scrollTo({ top: 0, behavior: 'instant' });
     if (TITLES[pathname]) document.title = TITLES[pathname];
   }, [pathname, hash, key]);
+  return null;
+}
+
+// After a new version of the website is published, pages that are already open
+// reload themselves on the next click, so nobody has to clear their cache.
+function UpdateWatcher() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    let current = null;
+    let stale = false;
+    let last = 0;
+    const check = async () => {
+      if (Date.now() - last < 60 * 1000) return;
+      last = Date.now();
+      try {
+        const r = await fetch('/api/version', { cache: 'no-store' });
+        const { version } = await r.json();
+        if (current === null) current = version;
+        else if (version !== current) stale = true;
+      } catch {
+        /* offline, try again later */
+      }
+    };
+    check();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') check();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.__checkForUpdate = () => {
+      if (stale) window.location.reload();
+      else check();
+    };
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+  useEffect(() => {
+    window.__checkForUpdate?.();
+  }, [pathname]);
   return null;
 }
 
@@ -56,6 +93,7 @@ function PublicSite() {
   return (
     <>
       <ScrollManager />
+      <UpdateWatcher />
       <Header />
       <main>
         <Routes key={location.key}>
@@ -63,8 +101,11 @@ function PublicSite() {
           <Route path="/lawyers" element={<Lawyers />} />
           <Route path="/lawyers/:slug" element={<LawyerProfile />} />
           <Route path="/expertise" element={<PracticeAreas />} />
+          <Route path="/expertise/:slug" element={<PracticeAreaDetail />} />
           <Route path="/practice-areas" element={<Navigate to="/expertise" replace />} />
-          <Route path="/careers" element={<Careers />} />
+          <Route path="/news" element={<NewsList />} />
+          <Route path="/news/:slug" element={<NewsArticle />} />
+          <Route path="/careers" element={<Navigate to="/news" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/privacy" element={<Privacy />} />

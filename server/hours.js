@@ -41,17 +41,28 @@ export function closedDates(settings) {
     .map((l) => l.split(/\s+/)[0]);
 }
 
-export function isOfficeOpen(settings, date = new Date()) {
-  const now = officeNow(date);
+// Weekly schedule: { "1": ["08:00", "18:00"], ..., "5": ["08:00", "14:30"] }, days 1 Monday to 7 Sunday.
+// Days that are missing are closed. Older installs used office_days, office_open and office_close.
+export function weeklySchedule(settings) {
+  try {
+    const s = JSON.parse(settings.office_schedule || '');
+    if (s && typeof s === 'object') return s;
+  } catch {}
   const days = String(settings.office_days || '')
     .split(',')
     .map((d) => Number(d.trim()))
     .filter(Boolean);
-  if (!days.includes(now.weekday)) return false;
+  return Object.fromEntries(days.map((d) => [String(d), [settings.office_open, settings.office_close]]));
+}
+
+export function isOfficeOpen(settings, date = new Date()) {
+  const now = officeNow(date);
+  const today = weeklySchedule(settings)[String(now.weekday)];
+  if (!Array.isArray(today)) return false;
   const closed = closedDates(settings);
   if (closed.includes(now.ymd) || closed.includes(now.md)) return false;
-  const open = toMinutes(settings.office_open);
-  const close = toMinutes(settings.office_close);
+  const open = toMinutes(today[0]);
+  const close = toMinutes(today[1]);
   if (open === null || close === null) return false;
   return now.minutes >= open && now.minutes < close;
 }

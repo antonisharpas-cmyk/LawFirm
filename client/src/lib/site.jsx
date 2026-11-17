@@ -4,13 +4,13 @@ import { api } from './api.js';
 const FALLBACK = {
   firm_name: 'H.A. Andreou & Co',
   legal_name: 'Helena Antonis Andreou LLC',
-  email: 'info@ailawyerscy.com',
-  phone: '+357 24 828373',
+  email: 'info@andreou.law',
+  phone: '+357 24 433070',
   fax: '',
   address_line1: '23-25 Piliou Street, Giorgos Mattheou Building, Office 501',
   address_line2: '6037 Larnaca, Cyprus',
   map_location: '34.9156651,33.6030268',
-  hours: 'Monday to Friday, 9:00 to 17:00'
+  hours: 'Monday to Thursday, 8:00 to 18:00\nFriday, 8:00 to 14:30'
 };
 
 const SiteContext = createContext({ settings: FALLBACK, areas: [], lawyers: [], loaded: false });

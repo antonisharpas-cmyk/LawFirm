@@ -40,7 +40,7 @@ export default function Footer() {
               ['/lawyers', t('footer.ourLawyers')],
               ['/expertise', t('nav.expertise')],
               ['/about', t('footer.aboutFirm')],
-              ['/careers', t('nav.careers')],
+              ['/news', t('nav.news')],
               ['/contact', t('nav.contact')]
             ].map(([to, l]) => (
               <li key={to}>
@@ -55,7 +55,7 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             {areas.slice(0, 6).map((a) => (
               <li key={a.id}>
-                <Link to={`/expertise#${a.slug}`} className="transition hover:text-gold">{tr(a, 'name')}</Link>
+                <Link to={`/expertise/${a.slug}`} className="transition hover:text-gold">{tr(a, 'name')}</Link>
               </li>
             ))}
           </ul>
@@ -80,7 +80,7 @@ export default function Footer() {
               <br />
               <a href={`mailto:${settings.email}`} className="hover:text-gold">{settings.email}</a>
             </p>
-            {ts(settings, 'hours') && <p>{ts(settings, 'hours')}</p>}
+            {ts(settings, 'hours') && <p className="whitespace-pre-line">{ts(settings, 'hours')}</p>}
           </address>
         </div>
       </div>

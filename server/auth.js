@@ -1,6 +1,15 @@
 import crypto from 'node:crypto';
 
-const SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+// The admin password is part of the signing key, so changing the password signs everyone out.
+const SECRET = (process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')) + ':' + (process.env.ADMIN_PASSWORD || '');
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
+const WEAK_PASSWORDS = new Set(['', 'change-me', 'admin', 'password', '123456', 'choose-a-strong-password']);
+
+// On the live site the admin console stays locked until a strong ADMIN_PASSWORD is set.
+export function adminLoginBlocked() {
+  const p = process.env.ADMIN_PASSWORD || '';
+  return IS_PRODUCTION && (WEAK_PASSWORDS.has(p) || p.length < 10);
+}
 const TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
 
 function b64url(buf) {
@@ -36,6 +45,7 @@ function safeEqual(a, b) {
 }
 
 export function checkCredentials(username, password) {
+  if (adminLoginBlocked()) return false;
   const u = process.env.ADMIN_USERNAME || 'admin';
   const p = process.env.ADMIN_PASSWORD || 'change-me';
   return safeEqual(username || '', u) && safeEqual(password || '', p);
@@ -52,6 +62,10 @@ export function requireAdmin(req, res, next) {
 
 // Very small in memory rate limiter for public endpoints.
 const buckets = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, b] of buckets) if (now > b.reset) buckets.delete(k);
+}, 10 * 60 * 1000).unref();
 export function rateLimit({ windowMs, max }) {
   return (req, res, next) => {
     const key = `${req.ip}:${req.baseUrl}${req.route?.path || req.path}`;

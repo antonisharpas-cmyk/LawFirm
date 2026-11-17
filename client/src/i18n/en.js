@@ -1,5 +1,5 @@
 export default {
-  nav: { home: 'Home', lawyers: 'Lawyers', expertise: 'Expertise', about: 'About', careers: 'Careers', contact: 'Contact', book: 'Contact Us', openMenu: 'Open menu', closeMenu: 'Close menu', language: 'Language' },
+  nav: { home: 'Home', lawyers: 'Lawyers', expertise: 'Expertise', about: 'About', careers: 'Careers', news: 'News', contact: 'Contact', book: 'Contact Us', openMenu: 'Open menu', closeMenu: 'Close menu', language: 'Language' },
   common: {
     viewProfile: 'View profile',
     bookConsultation: 'Contact Us',
@@ -15,7 +15,7 @@ export default {
   home: {
     heroEyebrow: 'H.A. Andreou & Co · Advocates, Legal Consultants',
     heroTitle: 'Clarity and Confidence in Every Legal Matter',
-    heroText: 'A full service commercial law firm in Larnaca, Cyprus, built on more than fifty years of experience before the Cyprus courts.',
+    heroText: 'A Larnaca-based law firm providing advice and court representation to businesses and individuals in commercial, corporate, property, insurance, employment and private client matters.',
     ctaExpertise: 'Our Expertise',
     firmEyebrow: 'Our Firm',
     firmTitle: 'A Full Service Commercial Law Firm in Cyprus',
@@ -71,8 +71,11 @@ export default {
     others: 'Other members of our team'
   },
   expertise: {
-    intro: 'We advise individuals, families and businesses on a broad range of legal matters, with the care and attention each one deserves.',
+    title: 'Areas of Expertise',
+    intro: 'Drawing on over fifty years of practice before the Cyprus courts, advising private and corporate clients, we support businesses, families and individuals in the following areas.',
     related: 'Related Lawyers',
+    readMore: 'Read more',
+    allAreas: 'All areas of expertise',
     ctaTitle: 'Not sure where your matter fits?',
     ctaText: 'Tell us about it and we will point you in the right direction.'
   },
@@ -144,6 +147,15 @@ export default {
     firm: 'H.A. Andreou & Co',
     errRequired: 'Please add your name and a message.'
   },
+  news: {
+    eyebrow: 'News & Insights',
+    title: 'News',
+    intro: 'Firm news, legal updates and insights from our team.',
+    empty: 'There are no news articles yet. Please check back soon.',
+    readMore: 'Read more',
+    back: 'All news',
+    notFound: 'This article could not be found.'
+  },
   careers: {
     eyebrow: 'Careers',
     title: 'Build Your Career With Us',
@@ -187,7 +199,7 @@ export default {
     errSize: 'Your CV must be smaller than 5 MB.'
   },
   footer: {
-    tagline: 'A full service commercial law firm in Larnaca, Cyprus, providing legal advice and representation to businesses and individuals.',
+    tagline: 'A Larnaca-based law firm providing advice and court representation to businesses and individuals in commercial, corporate, property, insurance, employment and private client matters.',
     explore: 'Explore',
     office: 'Office',
     follow: 'Follow us',

@@ -7,7 +7,7 @@ import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
 import { initDb, query, one, getSettings, usingMemoryDb, DEFAULT_SETTINGS, LANGS, HOME_AREAS_MAX } from './db.js';
-import { signToken, checkCredentials, requireAdmin, rateLimit } from './auth.js';
+import { signToken, checkCredentials, requireAdmin, rateLimit, adminLoginBlocked } from './auth.js';
 import { notifyOffice, sendInquiryReceipt, sendApplicationReceipt, sendChatReplyToVisitor, sendTestEmail, mailConfigured, officeEmail } from './mail.js';
 import { isOfficeOpen } from './hours.js';
 
@@ -16,7 +16,29 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.set('trust proxy', 1);
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        'default-src': ["'self'"],
+        'script-src': ["'self'"],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        'img-src': ["'self'", 'data:', 'blob:'],
+        'media-src': ["'self'"],
+        'connect-src': ["'self'"],
+        'frame-src': ['https://maps.google.com', 'https://www.google.com'],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+        'form-action': ["'self'"],
+        'frame-ancestors': ["'self'"],
+        'upgrade-insecure-requests': process.env.NODE_ENV === 'production' || process.env.RENDER ? [] : null
+      }
+    }
+  })
+);
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 
@@ -77,7 +99,8 @@ function cleanI18n(input, fields) {
 const I18N_FIELDS = {
   lawyers: ['title', 'summary', 'bio', 'languages', 'education', 'admissions'],
   practice_areas: ['name', 'summary', 'body'],
-  jobs: ['title', 'location', 'employment_type', 'summary', 'description', 'requirements']
+  jobs: ['title', 'location', 'employment_type', 'summary', 'description', 'requirements'],
+  news: ['title', 'summary', 'body']
 };
 
 async function saveI18n(table, row, body) {
@@ -97,6 +120,14 @@ function fingerprint(data) {
   }
   return fp;
 }
+
+function publicNews(n) {
+  if (!n) return null;
+  const { image, image_type, ...rest } = parseI18n(n);
+  return { ...rest, image_url: image ? `/api/news/${n.id}/image?v=${n.image_version}-${fingerprint(image)}` : null };
+}
+
+const isoDate = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? String(v) : new Date().toISOString().slice(0, 10));
 
 function publicArea(a) {
   if (!a) return null;
@@ -126,10 +157,27 @@ async function uniqueSlug(table, base, excludeId = null) {
 }
 
 // ---------- public API ----------
+// API answers are never cached by the browser (image routes set their own long cache, as their address changes with the image)
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 app.get('/api/health', (req, res) => res.json({ ok: true, memoryDb: usingMemoryDb }));
 
+// The current website version. Open pages check it and reload themselves after a new deploy.
+let siteVersion = 'dev';
+try {
+  siteVersion = crypto.createHash('sha1').update(fs.readFileSync(path.join(__dirname, '..', 'client', 'dist', 'index.html'))).digest('hex').slice(0, 12);
+} catch {}
+app.get('/api/version', (req, res) => res.json({ version: siteVersion }));
+
+// settings that stay private (internal flags and the office notification address)
+const PRIVATE_SETTINGS = new Set(['notify_email', 'jobs_seeded', 'home_areas_initialised']);
+const publicSettings = (s) => Object.fromEntries(Object.entries(s).filter(([k]) => !PRIVATE_SETTINGS.has(k) && !/^(content_update|areas_update|areas_text|area_added)_/.test(k)));
+
 app.get('/api/settings', wrap(async (req, res) => {
-  const s = await getSettings();
+  const s = publicSettings(await getSettings());
   res.json({ ...s, admin_online: isOfficeOpen(s) });
 }));
 
@@ -203,12 +251,41 @@ app.post('/api/inquiries', rateLimit({ windowMs: 10 * 60 * 1000, max: 8 }), wrap
   sendInquiryReceipt(settings, lang, { name: data.name, email: data.email, message: data.message.replace(/\n\n\[Website language: \w+\]$/, '') });
 }));
 
+// ---------- news ----------
+app.get('/api/news', wrap(async (req, res) => {
+  res.json((await query('SELECT * FROM news WHERE published = TRUE ORDER BY published_on DESC, id DESC')).map(publicNews));
+}));
+
+app.get('/api/news/:slug', wrap(async (req, res) => {
+  const row = await one('SELECT * FROM news WHERE slug = $1 AND published = TRUE', [req.params.slug]);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json(publicNews(row));
+}));
+
+app.get('/api/news/:id/image', wrap(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(404).end();
+  const row = await one('SELECT image, image_type FROM news WHERE id = $1', [id]);
+  if (!row || !row.image) return res.status(404).end();
+  res.set('Content-Type', row.image_type || 'image/jpeg');
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.send(Buffer.from(row.image, 'base64'));
+}));
+
 // ---------- careers ----------
 const CV_TYPES = {
   'application/pdf': 'pdf',
   'application/msword': 'doc',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx'
 };
+// check the file really is a PDF or Word document, not only its declared type
+function looksLikeDocument(type, b64) {
+  const head = Buffer.from(b64.slice(0, 16), 'base64');
+  if (type === 'application/pdf') return head.slice(0, 4).toString() === '%PDF';
+  if (type === 'application/msword') return head.slice(0, 4).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0]));
+  return head.slice(0, 2).toString() === 'PK'; // docx is a zip file
+}
+
 const JOB_FIELDS = ['title', 'location', 'employment_type', 'summary', 'description', 'requirements'];
 
 app.get('/api/jobs', wrap(async (req, res) => {
@@ -226,6 +303,7 @@ app.post('/api/applications', rateLimit({ windowMs: 30 * 60 * 1000, max: 6 }), w
   const m = /^data:([\w./+-]+);base64,([A-Za-z0-9+/=]+)$/.exec(b.cv?.dataUrl || '');
   if (!m || !CV_TYPES[m[1]]) return res.status(400).json({ error: 'Please attach your CV as a PDF or Word document.' });
   if (m[2].length > 7 * 1024 * 1024) return res.status(400).json({ error: 'Your CV must be smaller than 5 MB.' });
+  if (!looksLikeDocument(m[1], m[2])) return res.status(400).json({ error: 'Please attach your CV as a PDF or Word document.' });
   let job = null;
   if (b.job_id) job = await one('SELECT id, title, i18n FROM jobs WHERE id = $1', [Number(b.job_id)]);
   const jobTitle = job ? job.title : 'General application';
@@ -379,6 +457,9 @@ function scheduleVisitorReplyEmail(session, fromMessageId) {
 // ---------- admin API ----------
 app.post('/api/admin/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20 }), (req, res) => {
   const { username, password } = req.body || {};
+  if (adminLoginBlocked()) {
+    return res.status(503).json({ error: 'The admin console is locked until a strong ADMIN_PASSWORD (at least 10 characters) is set on the server.' });
+  }
   if (!checkCredentials(username, password)) return res.status(401).json({ error: 'Incorrect username or password' });
   res.json({ token: signToken({ role: 'admin', username }) });
 });
@@ -639,6 +720,64 @@ admin.post('/practice-areas/reorder', wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// news
+admin.get('/news', wrap(async (req, res) => {
+  res.json((await query('SELECT * FROM news ORDER BY published_on DESC, id DESC')).map(publicNews));
+}));
+
+admin.post('/news', wrap(async (req, res) => {
+  const b = req.body || {};
+  const title = clean(b.title, 300);
+  if (!title) return res.status(400).json({ error: 'Title is required' });
+  const slug = await uniqueSlug('news', title);
+  const row = await one(
+    'INSERT INTO news (slug, title, summary, body, published_on, published) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+    [slug, title, clean(b.summary, 1000), clean(b.body, 30000), isoDate(b.published_on), b.published !== false]
+  );
+  res.json(publicNews(await saveI18n('news', row, b)));
+}));
+
+admin.put('/news/:id', wrap(async (req, res) => {
+  const id = Number(req.params.id);
+  const cur = await one('SELECT * FROM news WHERE id = $1', [id]);
+  if (!cur) return res.status(404).json({ error: 'Not found' });
+  const b = req.body || {};
+  const title = clean(b.title, 300) || cur.title;
+  const slug = title !== cur.title ? await uniqueSlug('news', title, id) : cur.slug;
+  const row = await one(
+    'UPDATE news SET slug=$1, title=$2, summary=$3, body=$4, published_on=$5, published=$6 WHERE id=$7 RETURNING *',
+    [
+      slug,
+      title,
+      b.summary !== undefined ? clean(b.summary, 1000) : cur.summary,
+      b.body !== undefined ? clean(b.body, 30000) : cur.body,
+      b.published_on !== undefined ? isoDate(b.published_on) : cur.published_on,
+      b.published !== undefined ? Boolean(b.published) : cur.published,
+      id
+    ]
+  );
+  res.json(publicNews(await saveI18n('news', row, b)));
+}));
+
+admin.put('/news/:id/image', wrap(async (req, res) => {
+  const m = /^data:(image\/(jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(req.body?.dataUrl || '');
+  if (!m) return res.status(400).json({ error: 'Please upload a JPG, PNG or WEBP image.' });
+  if (m[3].length > 6 * 1024 * 1024) return res.status(400).json({ error: 'Image is too large.' });
+  const row = await one('UPDATE news SET image = $1, image_type = $2, image_version = image_version + 1 WHERE id = $3 RETURNING *', [m[3], m[1], Number(req.params.id)]);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json(publicNews(row));
+}));
+
+admin.delete('/news/:id/image', wrap(async (req, res) => {
+  const row = await one('UPDATE news SET image = NULL, image_type = NULL, image_version = image_version + 1 WHERE id = $1 RETURNING *', [Number(req.params.id)]);
+  res.json(publicNews(row));
+}));
+
+admin.delete('/news/:id', wrap(async (req, res) => {
+  await query('DELETE FROM news WHERE id = $1', [Number(req.params.id)]);
+  res.json({ ok: true });
+}));
+
 // jobs
 admin.get('/jobs', wrap(async (req, res) => {
   res.json((await query('SELECT * FROM jobs ORDER BY sort_order, id')).map(parseI18n));
@@ -719,7 +858,8 @@ admin.get('/applications/:id/cv', wrap(async (req, res) => {
   const row = await one('SELECT cv_name, cv_type, cv_data FROM applications WHERE id = $1', [Number(req.params.id)]);
   if (!row || !row.cv_data) return res.status(404).json({ error: 'CV not found' });
   res.set('Content-Type', row.cv_type);
-  res.set('Content-Disposition', `attachment; filename="${row.cv_name.replace(/"/g, '')}"`);
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('Content-Disposition', `attachment; filename="${row.cv_name.replace(/[^\w.\s()]/g, '_')}"`);
   res.send(Buffer.from(row.cv_data, 'base64'));
 }));
 
@@ -759,16 +899,34 @@ app.use('/api/admin', admin);
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 
+// ---------- caching ----------
+// Files under /assets have a content hash in their name, so they can be cached for a year.
+// Everything else (the page itself, logos, photos, the video) is checked with the server on every visit,
+// so visitors always see the latest version without clearing their cache.
+
 // ---------- static client ----------
 const dist = path.join(__dirname, '..', 'client', 'dist');
 if (fs.existsSync(dist)) {
-  app.use(express.static(dist, { index: false, maxAge: '7d' }));
-  app.get('*', (req, res) => res.sendFile(path.join(dist, 'index.html')));
+  app.use(
+    express.static(dist, {
+      index: false,
+      setHeaders(res, file) {
+        if (file.includes(`${path.sep}assets${path.sep}`)) res.set('Cache-Control', 'public, max-age=31536000, immutable');
+        else res.set('Cache-Control', 'no-cache');
+      }
+    })
+  );
+  app.get('*', (req, res) => {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.join(dist, 'index.html'));
+  });
 }
 
 // errors
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'The upload is too large.' });
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid request.' });
   console.error(err);
   res.status(500).json({ error: 'Something went wrong, please try again.' });
 });
@@ -778,7 +936,7 @@ initDb()
     app.listen(PORT, () => {
       console.log(`H.A. Andreou & Co server running on http://localhost:${PORT}`);
       if (usingMemoryDb) console.log('No DATABASE_URL set: using an in memory database (data resets on restart).');
-      if (!process.env.ADMIN_PASSWORD) console.log('ADMIN_PASSWORD not set: default admin login is admin / change-me');
+      if (!process.env.ADMIN_PASSWORD) console.log(adminLoginBlocked() ? 'Admin console locked: set a strong ADMIN_PASSWORD (at least 10 characters).' : 'ADMIN_PASSWORD not set: default admin login is admin / change-me (local testing only)');
     });
   })
   .catch((err) => {

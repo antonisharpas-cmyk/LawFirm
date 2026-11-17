@@ -28,7 +28,7 @@ export default function Contact() {
               [t('contact.phoneLabel'), <span dir="ltr">{settings.phone}</span>, telHref(settings.phone), false],
               [t('contact.faxLabel'), settings.fax && <span dir="ltr">{settings.fax}</span>, null, false],
               [t('contact.officeLabel'), address, `https://maps.google.com/?q=${encodeURIComponent(pin)}`, true],
-              [t('contact.hoursLabel'), ts(settings, 'hours'), null, false]
+              [t('contact.hoursLabel'), ts(settings, 'hours') && <span className="whitespace-pre-line">{ts(settings, 'hours')}</span>, null, false]
             ]
               .filter(([, v]) => v)
               .map(([label, value, href, ext]) => {
