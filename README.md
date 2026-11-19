@@ -49,7 +49,7 @@ Starter content: the team list confirmed by the firm (six people shown on the we
 
 ## Deploy on Render
 
-`render.yaml` creates the web service with a 1 GB disk for the SQLite database. Render takes daily snapshots of the disk. Set `ADMIN_PASSWORD` in the Render dashboard. For email notifications add the `SMTP_*`, `MAIL_FROM` and `NOTIFY_EMAIL` variables (see `.env.example`).
+`render.yaml` creates the web service with a 1 GB disk for the SQLite database. Render takes daily snapshots of the disk. Set `ADMIN_PASSWORD` (the firm's login) and `SUPPORT_PASSWORD` (the ErgonSite support login, username `ergonsite`) in the Render dashboard. For email notifications add the `SMTP_*`, `MAIL_FROM` and `NOTIFY_EMAIL` variables (see `.env.example`).
 
 ## Photo credits
 

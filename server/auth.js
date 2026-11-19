@@ -1,14 +1,17 @@
 import crypto from 'node:crypto';
 
-// The admin password is part of the signing key, so changing the password signs everyone out.
-const SECRET = (process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')) + ':' + (process.env.ADMIN_PASSWORD || '');
+// Both passwords are part of the signing key, so changing either one signs everyone out.
+const SECRET =
+  (process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')) +
+  ':' + (process.env.ADMIN_PASSWORD || '') +
+  ':' + (process.env.SUPPORT_PASSWORD || '');
 const IS_PRODUCTION = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
 const WEAK_PASSWORDS = new Set(['', 'change-me', 'admin', 'password', '123456', 'choose-a-strong-password']);
 
 // On the live site the admin console stays locked until a strong ADMIN_PASSWORD is set.
+const isWeak = (p) => WEAK_PASSWORDS.has(p) || p.length < 10;
 export function adminLoginBlocked() {
-  const p = process.env.ADMIN_PASSWORD || '';
-  return IS_PRODUCTION && (WEAK_PASSWORDS.has(p) || p.length < 10);
+  return IS_PRODUCTION && isWeak(process.env.ADMIN_PASSWORD || '');
 }
 const TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
 
@@ -44,11 +47,17 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(ha, hb);
 }
 
+// Two accounts with full access: the firm (ADMIN_*) and ErgonSite support (SUPPORT_*).
+// The support login only works when SUPPORT_USERNAME and a strong SUPPORT_PASSWORD are set.
 export function checkCredentials(username, password) {
   if (adminLoginBlocked()) return false;
-  const u = process.env.ADMIN_USERNAME || 'admin';
-  const p = process.env.ADMIN_PASSWORD || 'change-me';
-  return safeEqual(username || '', u) && safeEqual(password || '', p);
+  const u = username || '';
+  const p = password || '';
+  const adminOk = safeEqual(u, process.env.ADMIN_USERNAME || 'admin') && safeEqual(p, process.env.ADMIN_PASSWORD || 'change-me');
+  const su = process.env.SUPPORT_USERNAME || '';
+  const sp = process.env.SUPPORT_PASSWORD || '';
+  const supportOk = Boolean(su) && !isWeak(sp) && safeEqual(u, su) && safeEqual(p, sp);
+  return adminOk || supportOk;
 }
 
 export function requireAdmin(req, res, next) {
